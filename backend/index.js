@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 3000;
 
 // Health check endpoint
 app.get('/', (req, res) => {
-    res.json({ 
-        status: 'ok', 
+    res.json({
+        status: 'ok',
         message: 'AhaTok API está funcionando',
         endpoint: '/api/fetch'
     });
@@ -30,7 +30,7 @@ app.post('/api/fetch', async (req, res) => {
 
     // Validar que se envió una URL
     if (!url) {
-        return res.status(400).json({ 
+        return res.status(400).json({
             error: 'URL es requerida',
             message: 'Debes enviar una URL en el body: { "url": "..." }'
         });
@@ -43,12 +43,12 @@ app.post('/api/fetch', async (req, res) => {
         // - ytdl-core (Node.js)
         // - tiktok-scraper
         // - instagram-scraper
-        
+
         // Por ahora, retornamos un ejemplo de estructura
         // REEMPLAZA ESTO con tu lógica real de scraping
-        
+
         console.log(`Procesando URL: ${url}`);
-        
+
         // Ejemplo de respuesta (ESTRUCTURA REQUERIDA)
         const response = {
             thumbnail: "https://example.com/thumbnail.jpg",
@@ -63,7 +63,7 @@ app.post('/api/fetch', async (req, res) => {
 
     } catch (error) {
         console.error('Error al procesar video:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Error al procesar el video",
             message: error.message || "Error desconocido"
         });

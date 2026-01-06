@@ -1,28 +1,27 @@
 {
-  "name": "ahatok-backend",
-  "version": "1.0.0",
-  "description": "Backend API para AhaTok - Procesa videos de TikTok, Instagram y Facebook",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "keywords": [
-    "tiktok",
-    "instagram",
-    "facebook",
-    "video-downloader",
-    "api"
-  ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "axios": "^1.6.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+    "name": "ahatok-backend",
+    "version": "1.0.0",
+    "description": "Backend API para AhaTok - Procesa videos de TikTok, Instagram y Facebook",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js"
+    },
+    "keywords": [
+        "tiktok",
+        "instagram",
+        "facebook",
+        "video-downloader",
+        "api"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5",
+        "axios": "^1.6.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
 }
-
