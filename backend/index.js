@@ -1,7 +1,7 @@
 /**
  * Backend API para AhaTok - Render
  * Endpoint: /api/fetch
- * Procesa URLs de TikTok, Instagram y Facebook
+ * Procesa URLs de TikTok, Instagram y Facebook usando Cobalt API y métodos alternativos
  */
 
 const express = require('express');
@@ -30,84 +30,137 @@ function detectSocialNetwork(url) {
     return 'unknown';
 }
 
-// Procesar video de TikTok
-async function processTikTok(url) {
+/**
+ * Procesar video usando Cobalt API (Método Principal)
+ * Cobalt es una API pública muy confiable que soporta múltiples plataformas
+ */
+async function processWithCobalt(url) {
     try {
-        // Opción 1: Usar API pública de TikTok
-        const apiUrl = `https://api16-normal-useast5.us.tiktokv.com/aweme/v1/feed/?aweme_id=${extractTikTokId(url)}`;
-
-        // Intentar con API directa
-        const response = await axios.get(apiUrl, {
+        console.log('🔄 Intentando con Cobalt API...');
+        
+        const response = await axios.post('https://api.cobalt.tools/api/json', {
+            url: url,
+            vCodec: 'h264',
+            vQuality: 'max',
+            aFormat: 'mp3',
+            isAudioOnly: false
+        }, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer': 'https://www.tiktok.com/'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             },
-            timeout: 10000
+            timeout: 30000 // 30 segundos para Render
         });
 
-        if (response.data && response.data.aweme_list && response.data.aweme_list[0]) {
-            const video = response.data.aweme_list[0];
-            const videoInfo = video.video;
-            const playAddr = videoInfo.play_addr;
-
-            // Obtener la mejor calidad disponible
-            const videoUrl = playAddr.url_list && playAddr.url_list[0]
-                ? playAddr.url_list[0]
-                : playAddr.url_list[playAddr.url_list.length - 1];
-
+        if (response.data && response.data.status === 'success') {
+            const data = response.data;
+            
+            // Cobalt devuelve diferentes formatos, necesitamos extraer el mejor
+            let videoUrl720 = null;
+            let videoUrl1080 = null;
+            let audioUrl = null;
+            
+            // Buscar el mejor video disponible
+            if (data.url) {
+                // Si hay una URL directa
+                videoUrl720 = data.url;
+                videoUrl1080 = data.url;
+            } else if (data.video) {
+                videoUrl720 = data.video;
+                videoUrl1080 = data.video;
+            }
+            
+            // Buscar audio
+            if (data.audio) {
+                audioUrl = data.audio;
+            }
+            
             return {
-                thumbnail: video.video.cover.url_list[0] || video.video.origin_cover.url_list[0],
-                "720p": videoUrl,
-                "1080p": videoUrl, // TikTok generalmente no diferencia calidades
-                audio: video.music.play_url.url_list[0] || null,
-                title: video.desc || video.share_info.share_title || "Video de TikTok"
+                thumbnail: data.thumbnail || null,
+                "720p": videoUrl720 || null,
+                "1080p": videoUrl1080 || null,
+                audio: audioUrl || null,
+                title: data.text || data.title || "Video descargado"
             };
         }
     } catch (error) {
-        console.log('Error con API directa, intentando método alternativo...');
+        console.log('⚠️ Cobalt API error:', error.message);
+        throw error;
     }
+}
 
-    // Opción 2: Usar API alternativa
+/**
+ * Procesar TikTok con métodos específicos (sin marca de agua)
+ */
+async function processTikTok(url) {
     try {
-        const apiResponse = await axios.get(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, {
-            timeout: 15000,
+        console.log('🔄 Procesando TikTok...');
+        
+        // Método 1: API de TikTok sin marca de agua
+        const tiklyResponse = await axios.get(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, {
+            timeout: 20000,
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json'
             }
         });
 
-        if (apiResponse.data && apiResponse.data.video) {
+        if (tiklyResponse.data && tiklyResponse.data.video) {
+            const video = tiklyResponse.data.video;
+            const videoUrl = video.noWatermark || video.watermark || video;
+            
             return {
-                thumbnail: apiResponse.data.cover || apiResponse.data.thumbnail || null,
-                "720p": apiResponse.data.video.noWatermark || apiResponse.data.video.watermark || apiResponse.data.video,
-                "1080p": apiResponse.data.video.noWatermark || apiResponse.data.video.watermark || apiResponse.data.video,
-                audio: apiResponse.data.music || null,
-                title: apiResponse.data.title || apiResponse.data.desc || "Video de TikTok"
+                thumbnail: tiklyResponse.data.cover || tiklyResponse.data.thumbnail || null,
+                "720p": videoUrl,
+                "1080p": videoUrl, // TikTok generalmente no diferencia calidades
+                audio: tiklyResponse.data.music || null,
+                title: tiklyResponse.data.title || tiklyResponse.data.desc || "Video de TikTok"
             };
         }
     } catch (error) {
-        console.log('Error con API alternativa:', error.message);
+        console.log('⚠️ TikTok API error:', error.message);
+    }
+
+    // Método 2: API alternativa para TikTok
+    try {
+        const snaptikResponse = await axios.get(`https://snaptik.app/api/ajaxSearch`, {
+            params: {
+                q: url
+            },
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            timeout: 20000
+        });
+
+        if (snaptikResponse.data && snaptikResponse.data.data) {
+            const data = snaptikResponse.data.data;
+            return {
+                thumbnail: data.thumbnail || null,
+                "720p": data.video || null,
+                "1080p": data.video || null,
+                audio: data.audio || null,
+                title: data.title || "Video de TikTok"
+            };
+        }
+    } catch (error) {
+        console.log('⚠️ Snaptik API error:', error.message);
     }
 
     throw new Error('No se pudo obtener el video de TikTok');
 }
 
-// Extraer ID de TikTok
-function extractTikTokId(url) {
-    const match = url.match(/\/(\d+)(?:\?|$)/);
-    return match ? match[1] : null;
-}
-
-// Procesar video de Instagram
+/**
+ * Procesar Instagram
+ */
 async function processInstagram(url) {
     try {
-        // Usar API pública de Instagram
-        const apiUrl = `https://api.instagram.com/oembed/?url=${encodeURIComponent(url)}`;
-        const embedResponse = await axios.get(apiUrl, { timeout: 10000 });
-
-        // Para obtener el video real, necesitamos hacer scraping adicional
-        // Usar API alternativa
-        const downloadResponse = await axios.get(`https://api.saveig.app/api/ajaxSearch`, {
+        console.log('🔄 Procesando Instagram...');
+        
+        // Método 1: API de Instagram
+        const saveigResponse = await axios.get(`https://api.saveig.app/api/ajaxSearch`, {
             params: {
                 q: url,
                 t: 'media',
@@ -117,37 +170,35 @@ async function processInstagram(url) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            timeout: 15000
+            timeout: 20000
         });
 
-        if (downloadResponse.data && downloadResponse.data.data) {
-            const data = downloadResponse.data.data;
+        if (saveigResponse.data && saveigResponse.data.data) {
+            const data = saveigResponse.data.data;
             const videoUrl = data.video || data.videos?.[0]?.url;
-
+            
             return {
-                thumbnail: data.thumbnail || data.image || embedResponse.data.thumbnail_url,
+                thumbnail: data.thumbnail || data.image || null,
                 "720p": videoUrl || null,
                 "1080p": videoUrl || null,
                 audio: null,
-                title: embedResponse.data.title || "Video de Instagram"
+                title: data.title || "Video de Instagram"
             };
         }
     } catch (error) {
-        console.log('Error con API de Instagram:', error.message);
+        console.log('⚠️ Instagram API error:', error.message);
     }
 
-    // Método alternativo: scraping directo
+    // Método 2: Scraping directo
     try {
         const response = await axios.get(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             },
-            timeout: 10000
+            timeout: 15000
         });
 
         const html = response.data;
-
-        // Buscar video en el HTML
         const videoMatch = html.match(/"video_url":"([^"]+)"/);
         const thumbnailMatch = html.match(/"thumbnail_url":"([^"]+)"/);
         const titleMatch = html.match(/"caption":"([^"]+)"/);
@@ -163,27 +214,30 @@ async function processInstagram(url) {
             };
         }
     } catch (error) {
-        console.log('Error con scraping directo:', error.message);
+        console.log('⚠️ Instagram scraping error:', error.message);
     }
 
     throw new Error('No se pudo obtener el video de Instagram');
 }
 
-// Procesar video de Facebook
+/**
+ * Procesar Facebook
+ */
 async function processFacebook(url) {
     try {
-        // Facebook es más complicado, usar API pública
-        const apiResponse = await axios.get(`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}`, {
+        console.log('🔄 Procesando Facebook...');
+        
+        // Facebook es más restrictivo, intentar con scraping
+        const response = await axios.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             },
-            timeout: 15000,
+            timeout: 20000,
             maxRedirects: 5
         });
 
-        const html = apiResponse.data;
-
-        // Buscar video en el HTML
+        const html = response.data;
         const videoMatch = html.match(/video_src["\']?\s*:\s*["\']([^"\']+)["\']/);
         const thumbnailMatch = html.match(/thumbnail["\']?\s*:\s*["\']([^"\']+)["\']/);
 
@@ -197,10 +251,40 @@ async function processFacebook(url) {
             };
         }
     } catch (error) {
-        console.log('Error con Facebook:', error.message);
+        console.log('⚠️ Facebook error:', error.message);
     }
 
     throw new Error('No se pudo obtener el video de Facebook. Facebook tiene restricciones estrictas.');
+}
+
+/**
+ * Procesar video - Función principal con múltiples fallbacks
+ */
+async function processVideo(url) {
+    const socialType = detectSocialNetwork(url);
+    
+    // Intentar primero con Cobalt API (más confiable y universal)
+    try {
+        const result = await processWithCobalt(url);
+        if (result["720p"] || result["1080p"]) {
+            console.log('✅ Éxito con Cobalt API');
+            return result;
+        }
+    } catch (error) {
+        console.log('⚠️ Cobalt falló, intentando métodos específicos...');
+    }
+
+    // Si Cobalt falla, usar métodos específicos por plataforma
+    switch (socialType) {
+        case 'tiktok':
+            return await processTikTok(url);
+        case 'instagram':
+            return await processInstagram(url);
+        case 'facebook':
+            return await processFacebook(url);
+        default:
+            throw new Error('URL no soportada');
+    }
 }
 
 // Health check endpoint
@@ -208,7 +292,9 @@ app.get('/', (req, res) => {
     res.json({
         status: 'ok',
         message: 'AhaTok API está funcionando',
-        endpoint: '/api/fetch'
+        endpoint: '/api/fetch',
+        version: '2.0.0',
+        features: ['Cobalt API', 'TikTok sin marca de agua', 'Instagram', 'Facebook']
     });
 });
 
@@ -224,32 +310,21 @@ app.post('/api/fetch', async (req, res) => {
         });
     }
 
+    // Validar formato de URL
+    try {
+        new URL(url);
+    } catch (error) {
+        return res.status(400).json({
+            error: 'URL inválida',
+            message: 'La URL proporcionada no es válida'
+        });
+    }
+
     try {
         console.log(`📥 Procesando URL: ${url}`);
 
-        // Detectar tipo de red social
-        const socialType = detectSocialNetwork(url);
-        console.log(`🔍 Red social detectada: ${socialType}`);
-
-        let response;
-
-        // Procesar según el tipo de red social
-        switch (socialType) {
-            case 'tiktok':
-                response = await processTikTok(url);
-                break;
-            case 'instagram':
-                response = await processInstagram(url);
-                break;
-            case 'facebook':
-                response = await processFacebook(url);
-                break;
-            default:
-                return res.status(400).json({
-                    error: 'URL no soportada',
-                    message: 'Solo se admiten URLs de TikTok, Instagram o Facebook'
-                });
-        }
+        // Procesar el video con múltiples métodos
+        const response = await processVideo(url);
 
         // Validar que tenemos al menos una URL de video
         if (!response["720p"] && !response["1080p"]) {
@@ -266,17 +341,18 @@ app.post('/api/fetch', async (req, res) => {
         };
 
         console.log(`✅ Video procesado exitosamente: ${finalResponse.title}`);
-
+        
         // LA RESPUESTA DEBE SER EXACTAMENTE ESTA ESTRUCTURA
         res.json(finalResponse);
 
     } catch (error) {
         console.error('❌ Error al procesar video:', error);
-
+        
         // Determinar código de estado apropiado
-        const statusCode = error.message.includes('no soportada') ||
-            error.message.includes('URL') ? 400 : 500;
-
+        const statusCode = error.message.includes('no soportada') || 
+                          error.message.includes('URL') || 
+                          error.message.includes('inválida') ? 400 : 500;
+        
         res.status(statusCode).json({
             error: "Error al procesar el video",
             message: error.message || "Error desconocido al obtener el video"
@@ -288,5 +364,5 @@ app.post('/api/fetch', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor AhaTok API activo en el puerto ${PORT}`);
     console.log(`📍 Endpoint: http://0.0.0.0:${PORT}/api/fetch`);
+    console.log(`✨ Usando Cobalt API y métodos alternativos`);
 });
-
