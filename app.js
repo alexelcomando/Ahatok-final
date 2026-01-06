@@ -18,10 +18,10 @@ let db = null;
 let firebaseInitialized = false;
 
 // Verificar si Firebase está configurado
-const isFirebaseConfigured = firebaseConfig.apiKey && 
-                               firebaseConfig.apiKey !== "YOUR_API_KEY" &&
-                               firebaseConfig.projectId && 
-                               firebaseConfig.projectId !== "YOUR_PROJECT_ID";
+const isFirebaseConfigured = firebaseConfig.apiKey &&
+    firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+    firebaseConfig.projectId &&
+    firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 
 if (isFirebaseConfigured && typeof firebase !== 'undefined') {
     try {
