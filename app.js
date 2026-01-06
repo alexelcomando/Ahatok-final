@@ -18,9 +18,9 @@ let db = null;
 let firebaseInitialized = false;
 
 // Verificar si Firebase está configurado
-const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+const isFirebaseConfigured = firebaseConfig.apiKey !== "AIzaSyDJNWtDlfCu2sR0wv_QnNpNmz7SU2EgbEs" &&
     firebaseConfig.apiKey &&
-    firebaseConfig.projectId !== "YOUR_PROJECT_ID";
+    firebaseConfig.projectId !== "1:519930335704:web:e030eee7d45dd3f3c0e2ad";
 
 if (isFirebaseConfigured && typeof firebase !== 'undefined') {
     try {
@@ -169,14 +169,16 @@ function showInterstitialAd() {
 
 // Guardar en historial de Firebase
 async function saveToHistory(videoData, quality) {
-    if (!appState.currentUser || !db) {
+    // Verificar que Firebase esté configurado y el usuario esté autenticado
+    if (!auth || !db || !auth.currentUser) {
         console.warn('Usuario no autenticado o Firebase no configurado');
         return;
     }
 
     try {
+        // Usar auth.currentUser.uid para obtener el UID más actualizado
         await db.collection('history').add({
-            userId: appState.currentUser.uid,
+            userId: auth.currentUser.uid, // ¡ESTO ES VITAL! Usa auth.currentUser.uid
             url: videoData.originalUrl,
             thumbnail: videoData.thumbnail || '',
             title: videoData.title || 'Video sin título',
@@ -184,21 +186,24 @@ async function saveToHistory(videoData, quality) {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             socialNetwork: videoData.socialNetwork
         });
-        console.log('Guardado en historial');
+        console.log('✅ Guardado en historial correctamente');
     } catch (error) {
-        console.error('Error al guardar en historial:', error);
+        console.error('❌ Error al guardar en historial:', error);
+        // No mostrar alerta al usuario, solo loggear el error
     }
 }
 
 // Cargar historial desde Firebase
 async function loadHistory() {
-    if (!appState.currentUser || !db) {
+    // Verificar que Firebase esté configurado y el usuario esté autenticado
+    if (!auth || !db || !auth.currentUser) {
         return;
     }
 
     try {
+        // Usar auth.currentUser.uid para obtener el UID más actualizado
         const historyRef = db.collection('history')
-            .where('userId', '==', appState.currentUser.uid)
+            .where('userId', '==', auth.currentUser.uid) // ¡ESTO ES VITAL! Usa auth.currentUser.uid
             .orderBy('timestamp', 'desc')
             .limit(50);
 
@@ -211,6 +216,28 @@ async function loadHistory() {
         renderHistory();
     } catch (error) {
         console.error('Error al cargar historial:', error);
+        // Si hay error de índice, intentar sin orderBy
+        if (error.code === 'failed-precondition') {
+            console.warn('Índice no encontrado. Cargando sin ordenar...');
+            try {
+                const historyRef = db.collection('history')
+                    .where('userId', '==', auth.currentUser.uid)
+                    .limit(50);
+                const snapshot = await historyRef.get();
+                appState.history = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })).sort((a, b) => {
+                    // Ordenar manualmente por timestamp
+                    const timeA = a.timestamp?.seconds || 0;
+                    const timeB = b.timestamp?.seconds || 0;
+                    return timeB - timeA;
+                });
+                renderHistory();
+            } catch (retryError) {
+                console.error('Error al cargar historial (reintento):', retryError);
+            }
+        }
     }
 }
 
@@ -348,23 +375,38 @@ async function clearHistory() {
         return;
     }
 
-    if (!appState.currentUser || !db) {
+    // Verificar que Firebase esté configurado y el usuario esté autenticado
+    if (!auth || !db || !auth.currentUser) {
         alert('Debes iniciar sesión para usar esta función');
         return;
     }
 
     try {
+        // Obtener todos los documentos del usuario actual
+        const historyRef = db.collection('history')
+            .where('userId', '==', auth.currentUser.uid); // Usar auth.currentUser.uid
+
+        const snapshot = await historyRef.get();
+
+        if (snapshot.empty) {
+            appState.history = [];
+            renderHistory();
+            return;
+        }
+
+        // Eliminar en batch
         const batch = db.batch();
-        appState.history.forEach(item => {
-            const ref = db.collection('history').doc(item.id);
-            batch.delete(ref);
+        snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
         });
+
         await batch.commit();
         appState.history = [];
         renderHistory();
+        console.log('✅ Historial limpiado correctamente');
     } catch (error) {
-        console.error('Error al limpiar historial:', error);
-        alert('Error al limpiar el historial');
+        console.error('❌ Error al limpiar historial:', error);
+        alert('Error al limpiar el historial. Por favor, intenta nuevamente.');
     }
 }
 
