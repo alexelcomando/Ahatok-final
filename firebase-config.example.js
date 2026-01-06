@@ -20,3 +20,4 @@ const firebaseConfig = {
 // Si quieres usar este archivo separado, descomenta estas líneas en app.js:
 // import { firebaseConfig } from './firebase-config.js';
 
+

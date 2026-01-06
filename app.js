@@ -73,7 +73,12 @@ async function fetchVideo(url) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        const response = await fetch('https://mi-api-ahatok.onrender.com/api/fetch', {
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocalhost
+            ? 'http://localhost:3000/api/fetch'
+            : 'https://ahatok-api.onrender.com/api/fetch'; 
+
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

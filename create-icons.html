@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Generador de Iconos AhaTok</title>
     <style>
@@ -11,11 +12,13 @@
             background: #121212;
             color: white;
         }
+
         canvas {
             border: 2px solid #e91e63;
             margin: 20px 0;
             background: #1e1e1e;
         }
+
         button {
             background: #e91e63;
             color: white;
@@ -26,9 +29,11 @@
             border-radius: 8px;
             margin: 10px 5px;
         }
+
         button:hover {
             opacity: 0.9;
         }
+
         .info {
             background: #1e1e1e;
             padding: 15px;
@@ -37,6 +42,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>🎨 Generador de Iconos AhaTok</h1>
     <div class="info">
@@ -56,24 +62,24 @@
         function generateIcon(size) {
             const canvas = document.getElementById(`canvas${size}`);
             const ctx = canvas.getContext('2d');
-            
+
             // Fondo
             ctx.fillStyle = '#121212';
             ctx.fillRect(0, 0, size, size);
-            
+
             // Círculo de fondo
             ctx.fillStyle = '#1e1e1e';
             ctx.beginPath();
-            ctx.arc(size/2, size/2, size * 0.4, 0, 2 * Math.PI);
+            ctx.arc(size / 2, size / 2, size * 0.4, 0, 2 * Math.PI);
             ctx.fill();
-            
+
             // Texto "AT"
             ctx.fillStyle = '#e91e63';
             ctx.font = `bold ${size * 0.3}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('AT', size/2, size/2);
-            
+            ctx.fillText('AT', size / 2, size / 2);
+
             // Descargar
             const link = document.createElement('a');
             link.download = `icon-${size}.png`;
@@ -82,11 +88,11 @@
         }
 
         // Generar ambos al cargar
-        window.onload = function() {
+        window.onload = function () {
             generateIcon(512);
             setTimeout(() => generateIcon(192), 500);
         };
     </script>
 </body>
-</html>
 
+</html>
