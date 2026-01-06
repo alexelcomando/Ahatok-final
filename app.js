@@ -18,9 +18,10 @@ let db = null;
 let firebaseInitialized = false;
 
 // Verificar si Firebase está configurado
-const isFirebaseConfigured = firebaseConfig.apiKey !== "AIzaSyDJNWtDlfCu2sR0wv_QnNpNmz7SU2EgbEs" &&
-    firebaseConfig.apiKey &&
-    firebaseConfig.projectId !== "1:519930335704:web:e030eee7d45dd3f3c0e2ad";
+const isFirebaseConfigured = firebaseConfig.apiKey && 
+                               firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+                               firebaseConfig.projectId && 
+                               firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 
 if (isFirebaseConfigured && typeof firebase !== 'undefined') {
     try {
@@ -176,9 +177,8 @@ async function saveToHistory(videoData, quality) {
     }
 
     try {
-        // Usar auth.currentUser.uid para obtener el UID más actualizado
         await db.collection('history').add({
-            userId: auth.currentUser.uid, // ¡ESTO ES VITAL! Usa auth.currentUser.uid
+            userId: auth.currentUser.uid,
             url: videoData.originalUrl,
             thumbnail: videoData.thumbnail || '',
             title: videoData.title || 'Video sin título',

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generador de Iconos AhaTok</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #121212;
+            color: white;
+        }
+        canvas {
+            border: 2px solid #e91e63;
+            margin: 20px 0;
+            background: #1e1e1e;
+        }
+        button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .info {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Generador de Iconos AhaTok</h1>
+    <div class="info">
+        <p>Este generador crea iconos simples para tu PWA.</p>
+        <p>Haz clic en los botones para generar y descargar los iconos.</p>
+    </div>
+
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+
+    <div>
+        <button onclick="generateIcon(512)">Generar icon-512.png</button>
+        <button onclick="generateIcon(192)">Generar icon-192.png</button>
+    </div>
+
+    <script>
+        function generateIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const ctx = canvas.getContext('2d');
+            
+            // Fondo
+            ctx.fillStyle = '#121212';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Círculo de fondo
+            ctx.fillStyle = '#1e1e1e';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size * 0.4, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Texto "AT"
+            ctx.fillStyle = '#e91e63';
+            ctx.font = `bold ${size * 0.3}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('AT', size/2, size/2);
+            
+            // Descargar
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Generar ambos al cargar
+        window.onload = function() {
+            generateIcon(512);
+            setTimeout(() => generateIcon(192), 500);
+        };
+    </script>
+</body>
+</html>
+
