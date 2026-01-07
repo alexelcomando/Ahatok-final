@@ -49,8 +49,8 @@ const appState = {
 // rernarios para verificar si la url es de una red social
 const socialPatterns = {
     tiktok: /(?:https?:\/\/)?(?:www\.)?(?:vm\.|vt\.)?tiktok\.com/i,
-    instagram: /(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/i,
-    facebook: /(?:https?:\/\/)?(?:www\.)?facebook\.com\/.*\/videos\/(\d+)/i
+    instagram: /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/(?:p|reel|tv|stories)\/[A-Za-z0-9_-]+/i,
+    facebook: /(?:https?:\/\/)?(?:www\.|m\.)?(?:facebook\.com|fb\.com|fb\.watch)\/(?:.*\/videos\/|share\/p\/|watch\/|.*\/video\.php\?v=)/i
 };
 
 // Detectar tipo de red social

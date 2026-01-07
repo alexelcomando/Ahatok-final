@@ -48,13 +48,17 @@ function detectSocialNetwork(url) {
     if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(url)) {
         return 'tiktok';
     }
-    // Instagram
-    if (/instagram\.com\/(p|reel|tv)/i.test(url)) {
-        return 'instagram';
+    // Instagram - incluye instagr.am y diferentes formatos
+    if (/instagram\.com|instagr\.am/i.test(url)) {
+        if (/\/(p|reel|tv|stories)\//i.test(url)) {
+            return 'instagram';
+        }
     }
-    // Facebook
-    if (/facebook\.com.*\/videos\//i.test(url)) {
-        return 'facebook';
+    // Facebook - incluye diferentes formatos: videos, share, watch, fb.com, fb.watch
+    if (/facebook\.com|fb\.com|fb\.watch/i.test(url)) {
+        if (/\/videos\/|\/share\/p\/|\/watch\/|video\.php\?v=/i.test(url)) {
+            return 'facebook';
+        }
     }
     return 'unknown';
 }
