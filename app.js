@@ -53,13 +53,44 @@ const socialPatterns = {
     facebook: /(?:https?:\/\/)?(?:www\.|m\.|web\.)?(?:facebook\.com|fb\.com|fb\.watch)\/(?:.*\/videos\/|.*\/video\.php|share\/p\/|watch\/|.*\/posts\/|.*\/permalink\.php|.*\/photo\.php|.*\/reel\/|.*\/watch\/\?v=)/i
 };
 
-// Detectar tipo de red social
+// Detectar tipo de red social (mejorado para reconocer más formatos)
 function detectSocialNetwork(url) {
-    for (const [network, pattern] of Object.entries(socialPatterns)) {
-        if (pattern.test(url)) {
-            return network;
+    // Normalizar URL (agregar https:// si no tiene)
+    let normalizedUrl = url.trim();
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = 'https://' + normalizedUrl;
+    }
+    
+    // TikTok
+    if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(normalizedUrl)) {
+        return 'tiktok';
+    }
+    
+    // Instagram - múltiples formatos
+    if (/instagram\.com|instagr\.am/i.test(normalizedUrl)) {
+        // Verificar formatos: /p/ID, /reel/ID, /tv/ID, /stories/username/ID, username/p/ID
+        if (/\/(p|reel|tv|stories)\//i.test(normalizedUrl) || 
+            /instagram\.com\/[\w.]+\/(p|reel|tv)\//i.test(normalizedUrl) ||
+            /instagram\.com\/[\w.]+\/[\w-]+/i.test(normalizedUrl)) {
+            return 'instagram';
         }
     }
+    
+    // Facebook - múltiples formatos y dominios
+    if (/facebook\.com|fb\.com|fb\.watch/i.test(normalizedUrl)) {
+        // Verificar múltiples formatos
+        if (/\/videos\/|\/video\.php|\/share\/p\/|\/watch\/|\/posts\/|\/permalink\.php|\/photo\.php|\/reel\//i.test(normalizedUrl) ||
+            /facebook\.com\/[\w.]+\/videos\/|\/posts\//i.test(normalizedUrl) ||
+            /fb\.watch\/|fb\.com\/watch/i.test(normalizedUrl) ||
+            /\?v=|\?story_fbid=/i.test(normalizedUrl)) {
+            return 'facebook';
+        }
+        // También aceptar URLs de Facebook sin formato específico (pueden ser videos)
+        if (/facebook\.com\/[\w.]+\//i.test(normalizedUrl)) {
+            return 'facebook';
+        }
+    }
+    
     return null;
 }
 
