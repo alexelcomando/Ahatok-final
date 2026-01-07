@@ -6,6 +6,7 @@
 }
 
 :root {
+    /* Dark Mode (Default) */
     --bg-primary: #121212;
     --bg-card: #1e1e1e;
     --accent: #e91e63;
@@ -13,6 +14,17 @@
     --text-secondary: #b0b0b0;
     --border-color: #2a2a2a;
     --hover-bg: #2a2a2a;
+}
+
+[data-theme="light"] {
+    /* Light Mode */
+    --bg-primary: #f5f5f5;
+    --bg-card: #ffffff;
+    --accent: #e91e63;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --border-color: #e0e0e0;
+    --hover-bg: #f0f0f0;
 }
 
 body {
@@ -104,10 +116,14 @@ body {
     background-color: var(--bg-card);
     z-index: 999;
     transform: translateX(-100%);
-    transition: transform 0.3s;
+    transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .drawer {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .drawer.active {
@@ -229,7 +245,11 @@ body {
     border-radius: 8px;
     color: var(--text-primary);
     font-size: 1rem;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
+}
+
+[data-theme="light"] .url-input {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .url-input:focus {
@@ -289,13 +309,39 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
     border: 2px solid var(--border-color);
-    transition: border-color 0.3s;
+    transition: all 0.3s;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.social-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Colores específicos para cada red social */
+.social-icon.tiktok {
+    background: linear-gradient(135deg, #000000 0%, #ff0050 100%);
+}
+
+.social-icon.instagram {
+    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.social-icon.facebook {
+    background: linear-gradient(135deg, #1877f2 0%, #42a5f5 100%);
+}
+
+.social-logo {
+    filter: brightness(0) invert(1);
 }
 
 .social-item:hover .social-icon {
     border-color: var(--accent);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
 }
 
 .social-item span {
@@ -375,6 +421,11 @@ body {
     max-height: 500px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.3s;
+}
+
+[data-theme="light"] .video-preview img {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .download-options {
@@ -461,7 +512,11 @@ body {
     gap: 1rem;
     align-items: center;
     border: 1px solid var(--border-color);
-    transition: transform 0.2s;
+    transition: all 0.2s;
+}
+
+[data-theme="light"] .history-item {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .history-item:hover {
@@ -716,6 +771,9 @@ body {
     border: 1px solid var(--border-color);
     padding: 0.5rem;
     border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
     cursor: pointer;
 }
 

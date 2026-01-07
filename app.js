@@ -76,7 +76,7 @@ async function fetchVideo(url) {
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocalhost
             ? 'http://localhost:3000/api/fetch'
-            : 'https://ahatok-api.onrender.com/api/fetch'; 
+            : 'https://ahatok-api.onrender.com/api/fetch';
 
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -675,6 +675,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('closeSettingsBtn').addEventListener('click', () => {
         document.getElementById('settingsModal').classList.add('hidden');
+    });
+
+    // Cambio de tema
+    const themeSelect = document.getElementById('themeSelect');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    
+    // Aplicar tema guardado
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeSelect.value = savedTheme;
+
+    // Listener para cambio de tema
+    themeSelect.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        console.log(`✅ Tema cambiado a: ${theme}`);
     });
 
     // Historial
