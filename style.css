@@ -73,11 +73,15 @@ body {
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-    transition: filter 0.3s;
+    transition: filter 0.3s, transform 0.3s;
 }
 
 [data-theme="light"] .app-logo {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo-container:hover .app-logo {
+    transform: rotate(5deg);
 }
 
 .logo-text {
@@ -85,6 +89,26 @@ body {
     font-weight: bold;
     color: var(--accent);
     margin: 0;
+    transition: color 0.3s;
+}
+
+@media (max-width: 768px) {
+    .app-logo {
+        height: 32px;
+    }
+    
+    .logo-text {
+        font-size: 1.25rem;
+    }
+    
+    .logo-container {
+        gap: 0.5rem;
+    }
+    
+    .social-icon {
+        width: 60px;
+        height: 60px;
+    }
 }
 
 .menu-btn {
