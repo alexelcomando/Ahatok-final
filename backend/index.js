@@ -16,6 +16,26 @@ app.use(express.json()); // Parsea JSON en el body
 // El servidor DEBE usar la variable de entorno PORT que Render le da
 const PORT = process.env.PORT || 3000;
 
+// Limpiar URL de parámetros innecesarios
+function cleanUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        // Para TikTok, mantener solo el pathname esencial
+        if (urlObj.hostname.includes('tiktok.com')) {
+            // Extraer solo la parte esencial: /@user/video/ID
+            const match = url.match(/tiktok\.com\/(@[\w.]+)\/video\/(\d+)/i);
+            if (match) {
+                return `https://www.tiktok.com/${match[1]}/video/${match[2]}`;
+            }
+        }
+        // Para otras plataformas, remover parámetros de tracking
+        urlObj.search = '';
+        return urlObj.toString();
+    } catch (error) {
+        return url;
+    }
+}
+
 // Detectar tipo de red social
 function detectSocialNetwork(url) {
     if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(url)) {
@@ -124,15 +144,54 @@ async function processWithCobalt(url) {
  * Procesar TikTok con métodos específicos (sin marca de agua)
  */
 async function processTikTok(url) {
+    // Limpiar URL antes de procesar
+    const cleanUrlStr = cleanUrl(url);
+    console.log(`🔄 Procesando TikTok (URL limpia: ${cleanUrlStr})...`);
+    
+    // Método 1: API TikWM (más confiable)
     try {
-        console.log('🔄 Procesando TikTok...');
-        
-        // Método 1: API de TikTok sin marca de agua
-        const tiklyResponse = await axios.get(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, {
+        console.log('🔄 Método 1: TikWM API...');
+        const tikwmResponse = await axios.get(`https://tikwm.com/api/`, {
+            params: {
+                url: cleanUrlStr,
+                hd: 1
+            },
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json',
+                'Referer': 'https://tikwm.com/'
+            },
+            timeout: 25000
+        });
+
+        if (tikwmResponse.data && tikwmResponse.data.data) {
+            const data = tikwmResponse.data.data;
+            const videoUrl = data.hdplay || data.play || data.wmplay || data.music;
+            
+            if (videoUrl) {
+                console.log('✅ Éxito con TikWM API');
+                return {
+                    thumbnail: data.cover || data.origin_cover || null,
+                    "720p": videoUrl,
+                    "1080p": videoUrl,
+                    audio: data.music || null,
+                    title: data.title || data.desc || "Video de TikTok"
+                };
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ TikWM API error:', error.response?.status || error.message);
+    }
+
+    // Método 2: API Tiklydown
+    try {
+        console.log('🔄 Método 2: Tiklydown API...');
+        const tiklyResponse = await axios.get(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(cleanUrlStr)}`, {
             timeout: 20000,
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Referer': 'https://tiklydown.eu.org/'
             }
         });
 
@@ -140,46 +199,92 @@ async function processTikTok(url) {
             const video = tiklyResponse.data.video;
             const videoUrl = video.noWatermark || video.watermark || video;
             
-            return {
-                thumbnail: tiklyResponse.data.cover || tiklyResponse.data.thumbnail || null,
-                "720p": videoUrl,
-                "1080p": videoUrl, // TikTok generalmente no diferencia calidades
-                audio: tiklyResponse.data.music || null,
-                title: tiklyResponse.data.title || tiklyResponse.data.desc || "Video de TikTok"
-            };
+            if (videoUrl) {
+                console.log('✅ Éxito con Tiklydown API');
+                return {
+                    thumbnail: tiklyResponse.data.cover || tiklyResponse.data.thumbnail || null,
+                    "720p": videoUrl,
+                    "1080p": videoUrl,
+                    audio: tiklyResponse.data.music || null,
+                    title: tiklyResponse.data.title || tiklyResponse.data.desc || "Video de TikTok"
+                };
+            }
         }
     } catch (error) {
-        console.log('⚠️ TikTok API error:', error.message);
+        console.log('⚠️ Tiklydown API error:', error.response?.status || error.message);
     }
 
-    // Método 2: API alternativa para TikTok
+    // Método 3: API MusicallyDown
     try {
-        const snaptikResponse = await axios.get(`https://snaptik.app/api/ajaxSearch`, {
+        console.log('🔄 Método 3: MusicallyDown API...');
+        const musicallyResponse = await axios.get(`https://musicallydown.com/download`, {
             params: {
-                q: url
+                url: cleanUrlStr
             },
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'X-Requested-With': 'XMLHttpRequest'
+                'Accept': 'application/json'
             },
             timeout: 20000
         });
 
-        if (snaptikResponse.data && snaptikResponse.data.data) {
-            const data = snaptikResponse.data.data;
+        if (musicallyResponse.data && musicallyResponse.data.video) {
+            console.log('✅ Éxito con MusicallyDown API');
             return {
-                thumbnail: data.thumbnail || null,
-                "720p": data.video || null,
-                "1080p": data.video || null,
-                audio: data.audio || null,
-                title: data.title || "Video de TikTok"
+                thumbnail: musicallyResponse.data.thumbnail || null,
+                "720p": musicallyResponse.data.video,
+                "1080p": musicallyResponse.data.video,
+                audio: musicallyResponse.data.audio || null,
+                title: musicallyResponse.data.title || "Video de TikTok"
             };
         }
     } catch (error) {
-        console.log('⚠️ Snaptik API error:', error.message);
+        console.log('⚠️ MusicallyDown API error:', error.response?.status || error.message);
     }
 
-    throw new Error('No se pudo obtener el video de TikTok');
+    // Método 4: Scraping directo del HTML de TikTok
+    try {
+        console.log('🔄 Método 4: Scraping directo...');
+        const htmlResponse = await axios.get(cleanUrlStr, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9'
+            },
+            timeout: 20000
+        });
+
+        const html = htmlResponse.data;
+        
+        // Buscar video en el JSON embebido
+        const jsonMatch = html.match(/<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>(.*?)<\/script>/);
+        if (jsonMatch) {
+            try {
+                const data = JSON.parse(jsonMatch[1]);
+                const videoData = data['__DEFAULT_SCOPE__']?.['webapp.video-detail']?.itemInfo?.itemStruct;
+                
+                if (videoData && videoData.video) {
+                    const videoUrl = videoData.video.playAddr || videoData.video.downloadAddr;
+                    if (videoUrl) {
+                        console.log('✅ Éxito con scraping directo');
+                        return {
+                            thumbnail: videoData.video.cover || null,
+                            "720p": videoUrl,
+                            "1080p": videoUrl,
+                            audio: videoData.music?.playUrl || null,
+                            title: videoData.desc || "Video de TikTok"
+                        };
+                    }
+                }
+            } catch (parseError) {
+                console.log('⚠️ Error parseando JSON:', parseError.message);
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Scraping directo error:', error.response?.status || error.message);
+    }
+
+    throw new Error('No se pudo obtener el video de TikTok. Todas las APIs y métodos fallaron.');
 }
 
 /**
@@ -351,10 +456,12 @@ app.post('/api/fetch', async (req, res) => {
     }
 
     try {
-        console.log(`📥 Procesando URL: ${url}`);
+        // Limpiar URL antes de procesar
+        const cleanedUrl = cleanUrl(url);
+        console.log(`📥 Procesando URL: ${cleanedUrl}`);
 
         // Procesar el video con múltiples métodos
-        const response = await processVideo(url);
+        const response = await processVideo(cleanedUrl);
 
         // Validar que tenemos al menos una URL de video
         if (!response["720p"] && !response["1080p"]) {
