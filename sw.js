@@ -54,11 +54,10 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clonar la respuesta
-        const responseToCache = response.clone();
-
-        // Cachear solo respuestas exitosas
-        if (response.status === 200) {
+        // Solo cachear peticiones GET exitosas
+        // No cachear peticiones POST (como las del API)
+        if (event.request.method === 'GET' && response.status === 200) {
+          const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
