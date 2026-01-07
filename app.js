@@ -593,40 +593,41 @@ function setupLoginScreen() {
         });
     }
     
-    // Verificar código
+    // Verificar email (Firebase usa enlaces, no códigos)
     const loginScreenVerifyBtn = document.getElementById('loginScreenVerifyBtn');
     if (loginScreenVerifyBtn) {
         loginScreenVerifyBtn.addEventListener('click', async () => {
-            const code = document.getElementById('loginScreenVerifyCode').value.trim();
             const email = document.getElementById('loginScreenEmailInput').value.trim();
             const password = document.getElementById('loginScreenPasswordInput').value;
             
-            if (!code || code.length !== 6) {
-                alert('Por favor, ingresa el código de 6 dígitos');
-                return;
-            }
-            
             try {
                 loginScreenVerifyBtn.disabled = true;
-                loginScreenVerifyBtn.textContent = 'Verifying...';
+                loginScreenVerifyBtn.textContent = 'Checking...';
                 
-                // Firebase no tiene verificación de código por email directamente
-                // Necesitamos usar el método de verificación de email
-                // Por ahora, haremos login y verificaremos si el email está verificado
+                // Intentar login para verificar si el email ya está verificado
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 
                 if (userCredential.user.emailVerified) {
                     // Email verificado, login exitoso
                     // onAuthStateChanged manejará el resto
+                    console.log('✅ Email verificado, login exitoso');
                 } else {
-                    // Re-enviar código y pedir verificación
+                    // Email no verificado, re-enviar enlace
                     await userCredential.user.sendEmailVerification();
                     await auth.signOut();
-                    alert('Por favor, verifica tu email haciendo clic en el enlace que enviamos. Luego intenta iniciar sesión nuevamente.');
+                    alert('Por favor, verifica tu email haciendo clic en el enlace que enviamos a tu correo. Luego intenta iniciar sesión nuevamente.');
+                    
+                    // Volver al formulario de login
+                    document.getElementById('loginScreenVerifyForm').classList.add('hidden');
+                    document.getElementById('loginScreenEmailForm').classList.remove('hidden');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al verificar. Por favor, verifica que el código sea correcto o intenta iniciar sesión nuevamente.');
+                if (error.code === 'auth/wrong-password') {
+                    alert('Contraseña incorrecta. Por favor, verifica tu contraseña.');
+                } else {
+                    alert('Error: ' + error.message);
+                }
             } finally {
                 loginScreenVerifyBtn.disabled = false;
                 loginScreenVerifyBtn.textContent = 'Verify';
