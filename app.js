@@ -314,6 +314,15 @@ function navigateTo(view) {
 
 // Procesar descarga
 async function processDownload() {
+    // Verificar que el usuario esté autenticado
+    if (!auth || !auth.currentUser) {
+        alert('Debes iniciar sesión para descargar videos. Por favor, regístrate o inicia sesión.');
+        if (document.getElementById('loginScreen')) {
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+        return;
+    }
+
     const urlInput = document.getElementById('videoUrl');
     const url = urlInput.value.trim();
 
@@ -346,6 +355,13 @@ async function processDownload() {
 
 // Manejar descarga por calidad
 async function handleQualityDownload(quality) {
+    // Verificar que el usuario esté autenticado
+    if (!auth || !auth.currentUser) {
+        alert('Debes iniciar sesión para descargar videos. Por favor, regístrate o inicia sesión.');
+        document.getElementById('loginModal').classList.remove('hidden');
+        return;
+    }
+
     if (!appState.videoData) return;
 
     let downloadUrl = null;
@@ -369,7 +385,7 @@ async function handleQualityDownload(quality) {
             // Fallback: abrir en nueva pestaña si falla la descarga directa
             window.open(downloadUrl, '_blank');
         }
-        
+
         // Guardar en historial
         await saveToHistory(appState.videoData, quality);
         // Recargar historial si estamos en esa vista
@@ -397,10 +413,10 @@ async function downloadFile(url, filename) {
 
         // Convertir a blob
         const blob = await response.blob();
-        
+
         // Crear URL del blob
         const blobUrl = window.URL.createObjectURL(blob);
-        
+
         // Crear link de descarga
         const link = document.createElement('a');
         link.href = blobUrl;
@@ -408,13 +424,13 @@ async function downloadFile(url, filename) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Limpiar URL del blob
         window.URL.revokeObjectURL(blobUrl);
-        
+
         // Ocultar loader
         loader.classList.add('hidden');
-        
+
         console.log('✅ Descarga completada:', filename);
     } catch (error) {
         console.error('❌ Error al descargar:', error);
@@ -495,15 +511,26 @@ function initAuth() {
         appState.currentUser = user;
         const authBtn = document.getElementById('authBtn');
         const loginModal = document.getElementById('loginModal');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainContent = document.getElementById('mainContent');
+        const header = document.querySelector('.header');
 
         if (user) {
+            // Usuario autenticado - mostrar app
             authBtn.textContent = user.displayName || user.email || 'Cerrar Sesión';
             authBtn.title = `Usuario: ${user.email}`;
             loginModal.classList.add('hidden');
+            if (loginScreen) loginScreen.classList.add('hidden');
+            if (mainContent) mainContent.classList.remove('hidden');
+            if (header) header.classList.remove('hidden');
             loadHistory();
         } else {
+            // Usuario no autenticado - mostrar login screen
             authBtn.textContent = 'Iniciar Sesión';
             authBtn.title = '';
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (mainContent) mainContent.classList.add('hidden');
+            if (header) header.classList.add('hidden');
         }
     });
 

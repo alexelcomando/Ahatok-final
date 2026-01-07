@@ -61,8 +61,41 @@
         </div>
     </aside>
 
+    <!-- Login Screen (Bloquea acceso hasta login) -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-screen-content">
+            <div class="login-screen-header">
+                <h1 class="login-screen-logo">AhaTok</h1>
+                <button class="signup-btn-top" id="signupBtnTop">Sign Up</button>
+            </div>
+            <div class="login-screen-body">
+                <h2>Log in to AhaTok</h2>
+                <div class="login-screen-form">
+                    <input type="email" id="loginScreenEmail" placeholder="Email Address" class="login-screen-input">
+                    <button class="login-screen-primary-btn" id="loginScreenEmailBtn">Continue with Email</button>
+                    <div class="login-screen-divider">
+                        <span>or</span>
+                    </div>
+                    <div class="login-screen-options">
+                        <button class="login-screen-option-btn" id="loginScreenGoogleBtn">
+                            <span class="option-icon">🔍</span>
+                            Continue with Google
+                        </button>
+                        <button class="login-screen-option-btn" id="loginScreenGitHubBtn">
+                            <span class="option-icon">⚫</span>
+                            Continue with GitHub
+                        </button>
+                    </div>
+                    <p class="login-screen-footer">
+                        Don't have an account? <a href="#" id="loginScreenSignupLink">Sign Up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content hidden" id="mainContent">
         <!-- Home View -->
         <section class="view" id="homeView">
             <div class="container">
