@@ -64,17 +64,13 @@
 }
 
 .login-screen-form {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .login-screen-form.hidden {
     display: none !important;
-}
-
-.login-screen-form:not(.hidden) {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
 }
 
 .login-screen-input {
