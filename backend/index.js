@@ -38,12 +38,15 @@ function cleanUrl(url) {
 
 // Detectar tipo de red social
 function detectSocialNetwork(url) {
+    // TikTok - incluye dominios acortados (vt.tiktok.com, vm.tiktok.com)
     if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(url)) {
         return 'tiktok';
     }
+    // Instagram
     if (/instagram\.com\/(p|reel|tv)/i.test(url)) {
         return 'instagram';
     }
+    // Facebook
     if (/facebook\.com.*\/videos\//i.test(url)) {
         return 'facebook';
     }

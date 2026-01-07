@@ -48,7 +48,7 @@ const appState = {
 
 // rernarios para verificar si la url es de una red social
 const socialPatterns = {
-    tiktok: /(?:https?:\/\/)?(?:www\.)?(?:vm\.|vt\.)?tiktok\.com\/(?:.*\/)?(?:video\/)?(\d+)/i,
+    tiktok: /(?:https?:\/\/)?(?:www\.)?(?:vm\.|vt\.)?tiktok\.com/i,
     instagram: /(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/i,
     facebook: /(?:https?:\/\/)?(?:www\.)?facebook\.com\/.*\/videos\/(\d+)/i
 };
@@ -680,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cambio de tema
     const themeSelect = document.getElementById('themeSelect');
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    
+
     // Aplicar tema guardado
     document.documentElement.setAttribute('data-theme', savedTheme);
     themeSelect.value = savedTheme;
