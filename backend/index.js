@@ -377,15 +377,25 @@ app.post('/api/fetch', async (req, res) => {
 
     } catch (error) {
         console.error('❌ Error al procesar video:', error);
+        console.error('❌ Stack trace:', error.stack);
         
         // Determinar código de estado apropiado
         const statusCode = error.message.includes('no soportada') || 
                           error.message.includes('URL') || 
                           error.message.includes('inválida') ? 400 : 500;
         
+        // Log detallado para debugging
+        console.error('❌ Error details:', {
+            message: error.message,
+            code: error.code,
+            statusCode: statusCode,
+            url: url
+        });
+        
         res.status(statusCode).json({
             error: "Error al procesar el video",
-            message: error.message || "Error desconocido al obtener el video"
+            message: error.message || "Error desconocido al obtener el video",
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
