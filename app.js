@@ -654,7 +654,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('drawerOverlay').classList.remove('active');
     });
 
+    // Logo clickable para ir a inicio
+    document.getElementById('homeLogo').addEventListener('click', () => {
+        navigateTo('home');
+    });
+
     // Menú items
+    document.getElementById('homeBtn').addEventListener('click', () => {
+        navigateTo('home');
+        document.getElementById('drawer').classList.remove('active');
+        document.getElementById('drawerOverlay').classList.remove('active');
+    });
+
     document.getElementById('historyBtn').addEventListener('click', () => {
         navigateTo('history');
         document.getElementById('drawer').classList.remove('active');
