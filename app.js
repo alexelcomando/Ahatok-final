@@ -589,7 +589,7 @@ async function clearHistory() {
         'Cancelar',
         'Limpiar'
     );
-    
+
     if (!confirmed) {
         return;
     }
@@ -643,7 +643,7 @@ function setupLoginScreen() {
         // Prevenir múltiples event listeners - remover cualquier listener previo
         const newBtn = loginScreenGoogleBtn.cloneNode(true);
         loginScreenGoogleBtn.parentNode.replaceChild(newBtn, loginScreenGoogleBtn);
-        
+
         newBtn.addEventListener('click', async () => {
             // Prevenir clics múltiples mientras se procesa
             if (newBtn.disabled) {
@@ -666,7 +666,7 @@ function setupLoginScreen() {
                 console.log('✅ Login con Google exitoso');
             } catch (error) {
                 console.error('❌ Error en login con Google:', error);
-                
+
                 // No mostrar alerta para errores de popup cancelado (es normal si el usuario cierra)
                 if (error.code === 'auth/cancelled-popup-request') {
                     console.log('ℹ️ Popup cancelado por otro popup o usuario');
@@ -812,19 +812,19 @@ function initAuth() {
             authBtn.textContent = initial;
             authBtn.className = 'auth-btn user-avatar-btn';
             authBtn.title = `Usuario: ${user.email}`;
-            
+
             // Actualizar menú de usuario
             const userMenu = document.getElementById('userMenu');
             const userAvatar = document.getElementById('userAvatar');
             const userName = document.getElementById('userName');
             const userEmail = document.getElementById('userEmail');
-            
+
             if (userMenu) {
                 if (userAvatar) userAvatar.textContent = initial;
                 if (userName) userName.textContent = user.displayName || 'Usuario';
                 if (userEmail) userEmail.textContent = user.email || '';
             }
-            
+
             if (loginScreen) loginScreen.classList.add('hidden');
             // Main content siempre visible (landing page pública)
             if (mainContent) mainContent.classList.remove('hidden');
@@ -837,11 +837,11 @@ function initAuth() {
             authBtn.textContent = 'Iniciar Sesión';
             authBtn.className = 'auth-btn';
             authBtn.title = '';
-            
+
             // Ocultar menú de usuario
             const userMenu = document.getElementById('userMenu');
             if (userMenu) userMenu.classList.remove('active');
-            
+
             if (loginScreen) loginScreen.classList.add('hidden'); // Login oculto por defecto
             if (mainContent) mainContent.classList.remove('hidden'); // Contenido siempre visible
             if (header) header.classList.remove('hidden'); // Header siempre visible
@@ -868,38 +868,23 @@ function initAuth() {
         }
     });
 
-    // Cerrar menú de usuario al hacer clic fuera
-    document.addEventListener('click', (e) => {
-        const userMenu = document.getElementById('userMenu');
-        const authBtn = document.getElementById('authBtn');
-        if (userMenu && !userMenu.contains(e.target) && !authBtn.contains(e.target)) {
-            userMenu.classList.remove('active');
+    // Botón de autenticación en header
+    document.getElementById('authBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (appState.currentUser) {
+            // Mostrar/ocultar menú de usuario
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.classList.toggle('active');
+            }
+        } else {
+            // Mostrar modal de login si no está autenticado con transición suave
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) {
+                loginScreen.classList.remove('hidden');
+            }
         }
     });
-
-    // Botón de cerrar sesión
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
-            const userMenu = document.getElementById('userMenu');
-            if (userMenu) userMenu.classList.remove('active');
-            
-            // Mostrar alerta personalizada
-            const confirmed = await showCustomAlert(
-                'Cerrar Sesión',
-                '¿Estás seguro de que deseas cerrar sesión?',
-                'Cancelar',
-                'Cerrar Sesión'
-            );
-            
-            if (confirmed) {
-                auth.signOut().catch(error => {
-                    console.error('Error al cerrar sesión:', error);
-                    showCustomAlert('Error', 'Error al cerrar sesión. Por favor, intenta nuevamente.', 'Aceptar');
-                });
-            }
-        });
-    }
 
     // NOTA: El event listener para loginScreenGoogleBtn ya está configurado en setupLoginScreen()
     // No duplicar aquí para evitar popups conflictivos
@@ -993,6 +978,39 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loginScreen').classList.add('hidden');
         });
     }
+
+    // Botón de cerrar sesión
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) userMenu.classList.remove('active');
+
+            // Mostrar alerta personalizada
+            const confirmed = await showCustomAlert(
+                'Cerrar Sesión',
+                '¿Estás seguro de que deseas cerrar sesión?',
+                'Cancelar',
+                'Cerrar Sesión'
+            );
+
+            if (confirmed) {
+                auth.signOut().catch(error => {
+                    console.error('Error al cerrar sesión:', error);
+                    showCustomAlert('Error', 'Error al cerrar sesión. Por favor, intenta nuevamente.', 'Aceptar');
+                });
+            }
+        });
+    }
+
+    // Cerrar menú de usuario al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        const userMenu = document.getElementById('userMenu');
+        const authBtn = document.getElementById('authBtn');
+        if (userMenu && !userMenu.contains(e.target) && !authBtn.contains(e.target)) {
+            userMenu.classList.remove('active');
+        }
+    });
 
     // Modales legales
     const privacyLink = document.getElementById('privacyLink');
