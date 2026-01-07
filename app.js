@@ -850,12 +850,16 @@ function initAuth() {
 
     // Botón de autenticación en header
     document.getElementById('authBtn').addEventListener('click', (e) => {
+        console.log('🔘 authBtn clickeado'); // Debug
+        console.log('👤 Usuario actual:', appState.currentUser); // Debug
         e.stopPropagation();
         if (appState.currentUser) {
             // Mostrar/ocultar menú de usuario
             const userMenu = document.getElementById('userMenu');
+            console.log('📋 userMenu encontrado:', !!userMenu); // Debug
             if (userMenu) {
                 userMenu.classList.toggle('active');
+                console.log('🔄 userMenu classes después de toggle:', userMenu.className); // Debug
             }
         } else {
             // Mostrar modal de login si no está autenticado con transición suave
@@ -868,21 +872,12 @@ function initAuth() {
         }
     });
 
-    // Botón de autenticación en header
-    document.getElementById('authBtn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (appState.currentUser) {
-            // Mostrar/ocultar menú de usuario
-            const userMenu = document.getElementById('userMenu');
-            if (userMenu) {
-                userMenu.classList.toggle('active');
-            }
-        } else {
-            // Mostrar modal de login si no está autenticado con transición suave
-            const loginScreen = document.getElementById('loginScreen');
-            if (loginScreen) {
-                loginScreen.classList.remove('hidden');
-            }
+    // Cerrar menú de usuario al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        const userMenu = document.getElementById('userMenu');
+        const authBtn = document.getElementById('authBtn');
+        if (userMenu && !userMenu.contains(e.target) && !authBtn.contains(e.target)) {
+            userMenu.classList.remove('active');
         }
     });
 
