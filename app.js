@@ -564,7 +564,14 @@ function setupLoginScreen() {
         if (loginScreen) loginScreen.classList.add('hidden');
         if (loginModal) {
             loginModal.classList.remove('hidden');
-            document.getElementById('emailRegisterBtn').click();
+            // Ocultar opciones y mostrar formulario de registro directamente
+            const loginOptions = document.querySelector('.login-options');
+            const emailLoginForm = document.getElementById('emailLoginForm');
+            const emailRegisterForm = document.getElementById('emailRegisterForm');
+            
+            if (loginOptions) loginOptions.classList.add('hidden');
+            if (emailLoginForm) emailLoginForm.classList.add('hidden');
+            if (emailRegisterForm) emailRegisterForm.classList.remove('hidden');
         }
     };
 
