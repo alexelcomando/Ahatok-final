@@ -60,22 +60,22 @@ function detectSocialNetwork(url) {
     if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
         normalizedUrl = 'https://' + normalizedUrl;
     }
-    
+
     // TikTok
     if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(normalizedUrl)) {
         return 'tiktok';
     }
-    
+
     // Instagram - múltiples formatos
     if (/instagram\.com|instagr\.am/i.test(normalizedUrl)) {
         // Verificar formatos: /p/ID, /reel/ID, /tv/ID, /stories/username/ID, username/p/ID
-        if (/\/(p|reel|tv|stories)\//i.test(normalizedUrl) || 
+        if (/\/(p|reel|tv|stories)\//i.test(normalizedUrl) ||
             /instagram\.com\/[\w.]+\/(p|reel|tv)\//i.test(normalizedUrl) ||
             /instagram\.com\/[\w.]+\/[\w-]+/i.test(normalizedUrl)) {
             return 'instagram';
         }
     }
-    
+
     // Facebook - múltiples formatos y dominios
     if (/facebook\.com|fb\.com|fb\.watch/i.test(normalizedUrl)) {
         // Verificar múltiples formatos
@@ -90,7 +90,7 @@ function detectSocialNetwork(url) {
             return 'facebook';
         }
     }
-    
+
     return null;
 }
 
@@ -421,8 +421,7 @@ async function processDownload() {
 async function handleQualityDownload(quality) {
     // Verificar que el usuario esté autenticado
     if (!auth || !auth.currentUser) {
-        alert('Debes iniciar sesión para descargar videos. Por favor, regístrate o inicia sesión.');
-        document.getElementById('loginModal').classList.remove('hidden');
+        alert('Debes iniciar sesión para descargar videos.');
         return;
     }
 
@@ -553,15 +552,6 @@ async function clearHistory() {
     }
 }
 
-// Mostrar/ocultar error de autenticación
-function showAuthError(message) {
-    const errorDiv = document.getElementById('authError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
-    setTimeout(() => {
-        errorDiv.classList.add('hidden');
-    }, 5000);
-}
 
 // ============================================
 // SISTEMA DE LOGIN SIMPLIFICADO (SOLO GOOGLE)
@@ -634,7 +624,6 @@ function initAuth() {
     auth.onAuthStateChanged((user) => {
         appState.currentUser = user;
         const authBtn = document.getElementById('authBtn');
-        const loginModal = document.getElementById('loginModal');
         const loginScreen = document.getElementById('loginScreen');
         const mainContent = document.getElementById('mainContent');
         const header = document.querySelector('.header');
@@ -643,7 +632,6 @@ function initAuth() {
             // Usuario autenticado - mostrar app
             authBtn.textContent = user.displayName || user.email || 'Cerrar Sesión';
             authBtn.title = `Usuario: ${user.email}`;
-            loginModal.classList.add('hidden');
             if (loginScreen) loginScreen.classList.add('hidden');
             if (mainContent) mainContent.classList.remove('hidden');
             if (header) header.classList.remove('hidden');
@@ -667,19 +655,11 @@ function initAuth() {
                     alert('Error al cerrar sesión');
                 });
             }
-        } else {
-            document.getElementById('loginModal').classList.remove('hidden');
         }
     });
 
-    // Cerrar modal de login
-    document.getElementById('closeLoginBtn').addEventListener('click', () => {
-        document.getElementById('loginModal').classList.add('hidden');
-        resetLoginForms();
-    });
-
-    // Login con Google
-    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    // Login con Google (desde login screen)
+    document.getElementById('loginScreenGoogleBtn').addEventListener('click', async () => {
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
             await auth.signInWithPopup(provider);
@@ -696,141 +676,9 @@ function initAuth() {
                 errorMessage += error.message || 'Intenta nuevamente.';
             }
 
-            showAuthError(errorMessage);
+            alert(errorMessage);
         }
     });
-
-    // Mostrar formulario de email (login)
-    document.getElementById('emailLoginBtn').addEventListener('click', () => {
-        document.querySelector('.login-options').classList.add('hidden');
-        document.getElementById('emailLoginForm').classList.remove('hidden');
-        document.getElementById('emailRegisterForm').classList.add('hidden');
-    });
-
-    // Mostrar formulario de registro
-    document.getElementById('emailRegisterBtn').addEventListener('click', () => {
-        document.querySelector('.login-options').classList.add('hidden');
-        document.getElementById('emailRegisterForm').classList.remove('hidden');
-        document.getElementById('emailLoginForm').classList.add('hidden');
-    });
-
-    // Cambiar a registro
-    document.getElementById('switchToRegister').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('emailLoginForm').classList.add('hidden');
-        document.getElementById('emailRegisterForm').classList.remove('hidden');
-    });
-
-    // Cambiar a login
-    document.getElementById('switchToLogin').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('emailRegisterForm').classList.add('hidden');
-        document.getElementById('emailLoginForm').classList.remove('hidden');
-    });
-
-    // Login con email/password
-    document.getElementById('emailSubmitBtn').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-
-        if (!email || !password) {
-            showAuthError('Por favor, completa todos los campos');
-            return;
-        }
-
-        const submitBtn = document.getElementById('emailSubmitBtn');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Iniciando sesión...';
-
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            // El modal se cerrará automáticamente
-        } catch (error) {
-            console.error('Error en login:', error);
-            let errorMessage = 'Error al iniciar sesión. ';
-
-            switch (error.code) {
-                case 'auth/user-not-found':
-                    errorMessage += 'No existe una cuenta con este email.';
-                    break;
-                case 'auth/wrong-password':
-                    errorMessage += 'Contraseña incorrecta.';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage += 'Email inválido.';
-                    break;
-                case 'auth/user-disabled':
-                    errorMessage += 'Esta cuenta ha sido deshabilitada.';
-                    break;
-                default:
-                    errorMessage += error.message || 'Intenta nuevamente.';
-            }
-
-            showAuthError(errorMessage);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Iniciar Sesión';
-        }
-    });
-
-    // Registro con email/password
-    document.getElementById('registerSubmitBtn').addEventListener('click', async () => {
-        const email = document.getElementById('registerEmail').value.trim();
-        const password = document.getElementById('registerPassword').value;
-
-        if (!email || !password) {
-            showAuthError('Por favor, completa todos los campos');
-            return;
-        }
-
-        if (password.length < 6) {
-            showAuthError('La contraseña debe tener al menos 6 caracteres');
-            return;
-        }
-
-        const submitBtn = document.getElementById('registerSubmitBtn');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creando cuenta...';
-
-        try {
-            await auth.createUserWithEmailAndPassword(email, password);
-            // El modal se cerrará automáticamente
-        } catch (error) {
-            console.error('Error en registro:', error);
-            let errorMessage = 'Error al crear la cuenta. ';
-
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    errorMessage += 'Ya existe una cuenta con este email.';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage += 'Email inválido.';
-                    break;
-                case 'auth/weak-password':
-                    errorMessage += 'La contraseña es muy débil.';
-                    break;
-                default:
-                    errorMessage += error.message || 'Intenta nuevamente.';
-            }
-
-            showAuthError(errorMessage);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Crear Cuenta';
-        }
-    });
-}
-
-// Resetear formularios de login
-function resetLoginForms() {
-    document.querySelector('.login-options').classList.remove('hidden');
-    document.getElementById('emailLoginForm').classList.add('hidden');
-    document.getElementById('emailRegisterForm').classList.add('hidden');
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPassword').value = '';
-    document.getElementById('registerEmail').value = '';
-    document.getElementById('registerPassword').value = '';
-    document.getElementById('authError').classList.add('hidden');
 }
 
 // Inicialización
