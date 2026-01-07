@@ -504,7 +504,7 @@ function setupLoginScreen() {
     // Login con email desde login screen
     const loginScreenEmailBtn = document.getElementById('loginScreenEmailBtn');
     const loginScreenEmail = document.getElementById('loginScreenEmail');
-    
+
     if (loginScreenEmailBtn && loginScreenEmail) {
         loginScreenEmailBtn.addEventListener('click', async () => {
             const email = loginScreenEmail.value.trim();
@@ -512,7 +512,7 @@ function setupLoginScreen() {
                 alert('Por favor, ingresa tu email');
                 return;
             }
-            
+
             // Mostrar modal de login con email prellenado
             const loginScreen = document.getElementById('loginScreen');
             const loginModal = document.getElementById('loginModal');
@@ -530,11 +530,26 @@ function setupLoginScreen() {
     if (loginScreenGoogleBtn) {
         loginScreenGoogleBtn.addEventListener('click', async () => {
             try {
+                if (!auth) {
+                    alert('Firebase no está configurado. Por favor, verifica la configuración.');
+                    return;
+                }
                 const provider = new firebase.auth.GoogleAuthProvider();
                 await auth.signInWithPopup(provider);
+                // El login screen se ocultará automáticamente por onAuthStateChanged
             } catch (error) {
                 console.error('Error en login con Google:', error);
-                alert('Error al iniciar sesión con Google. Por favor, intenta nuevamente.');
+                let errorMessage = 'Error al iniciar sesión con Google. ';
+                
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage += 'La ventana fue cerrada.';
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMessage += 'El navegador bloqueó la ventana. Por favor, permite ventanas emergentes.';
+                } else {
+                    errorMessage += error.message || 'Intenta nuevamente.';
+                }
+                
+                alert(errorMessage);
             }
         });
     }
@@ -542,7 +557,7 @@ function setupLoginScreen() {
     // Sign up desde login screen
     const loginScreenSignupLink = document.getElementById('loginScreenSignupLink');
     const signupBtnTop = document.getElementById('signupBtnTop');
-    
+
     const showSignup = () => {
         const loginScreen = document.getElementById('loginScreen');
         const loginModal = document.getElementById('loginModal');
@@ -552,14 +567,14 @@ function setupLoginScreen() {
             document.getElementById('emailRegisterBtn').click();
         }
     };
-    
+
     if (loginScreenSignupLink) {
         loginScreenSignupLink.addEventListener('click', (e) => {
             e.preventDefault();
             showSignup();
         });
     }
-    
+
     if (signupBtnTop) {
         signupBtnTop.addEventListener('click', (e) => {
             e.preventDefault();
