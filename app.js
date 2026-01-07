@@ -850,19 +850,21 @@ function initAuth() {
 
     // Botón de autenticación en header
     document.getElementById('authBtn').addEventListener('click', (e) => {
-        console.log('🔘 authBtn clickeado'); // Debug
-        console.log('👤 Usuario actual:', appState.currentUser); // Debug
         e.stopPropagation();
-        if (appState.currentUser) {
+        // Verificar estado actual de Firebase en lugar de appState
+        const currentUser = auth ? auth.currentUser : null;
+        console.log('Estado actual:', currentUser); // Temporal para debug
+
+        if (currentUser) {
             // Mostrar/ocultar menú de usuario
             const userMenu = document.getElementById('userMenu');
-            console.log('📋 userMenu encontrado:', !!userMenu); // Debug
             if (userMenu) {
+                // Remover hidden y toggle active
+                userMenu.classList.remove('hidden');
                 userMenu.classList.toggle('active');
-                console.log('🔄 userMenu classes después de toggle:', userMenu.className); // Debug
             }
         } else {
-            // Mostrar modal de login si no está autenticado con transición suave
+            // Mostrar modal de login si no está autenticado
             const loginScreen = document.getElementById('loginScreen');
             if (loginScreen) {
                 loginScreen.classList.remove('hidden');
@@ -887,6 +889,34 @@ function initAuth() {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const themeLabel = document.querySelector('.theme-label');
+
+    // Cargar tema guardado
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Actualizar estado del switch
+    if (themeToggle) {
+        themeToggle.checked = savedTheme === 'light';
+
+        // Event listener para el switch
+        themeToggle.addEventListener('change', (e) => {
+            const theme = e.target.checked ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+
+            // Animar el ícono del tema
+            if (themeLabel) {
+                themeLabel.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    themeLabel.style.transform = 'rotate(0deg)';
+                }, 300);
+            }
+        });
+    }
+
     // Navegación
     document.getElementById('downloadBtn').addEventListener('click', processDownload);
     document.getElementById('videoUrl').addEventListener('keypress', (e) => {
@@ -1067,22 +1097,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-    });
-
-    // Cambio de tema
-    const themeSelect = document.getElementById('themeSelect');
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-
-    // Aplicar tema guardado
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    themeSelect.value = savedTheme;
-
-    // Listener para cambio de tema
-    themeSelect.addEventListener('change', (e) => {
-        const theme = e.target.value;
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        console.log(`✅ Tema cambiado a: ${theme}`);
     });
 
     // Historial

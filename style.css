@@ -59,66 +59,21 @@ body {
 .theme-toggle-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
 }
 
 .theme-label {
     font-size: 1.25rem;
     cursor: pointer;
     user-select: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.theme-select {
-    padding: 0.5rem 1rem;
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.theme-label:hover {
+    transform: rotate(180deg);
 }
 
-.theme-select:hover {
-    border-color: var(--accent);
-    background-color: var(--hover-bg);
-}
-
-.theme-select:focus {
-    outline: none;
-    border-color: var(--accent);
-}
-
-.user-menu-container {
-    position: relative;
-}
-
-.logo-container {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    user-select: none;
-    overflow: hidden;
-}
-
-.logo-container:hover {
-    opacity: 1;
-    transform: translateX(-50%) scale(1.05);
-}
-
-.logo-container:active {
-    transform: translateX(-50%) scale(0.95);
-}
-
-.app-logo {
-    height: 40px;
-    width: auto;
+.theme-switch {
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);

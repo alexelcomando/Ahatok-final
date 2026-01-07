@@ -32,11 +32,14 @@
         </div>
         <div class="header-right">
             <div class="theme-toggle-container">
-                <label for="themeSelect" class="theme-label">🌓</label>
-                <select id="themeSelect" class="theme-select">
-                    <option value="dark">Oscuro</option>
-                    <option value="light">Claro</option>
-                </select>
+                <label for="themeToggle" class="theme-label">🌓</label>
+                <div class="theme-switch">
+                    <input type="checkbox" id="themeToggle" class="theme-toggle-input">
+                    <span class="theme-slider">
+                        <span class="theme-slider-icon sun">☀️</span>
+                        <span class="theme-slider-icon moon">🌙</span>
+                    </span>
+                </div>
             </div>
             <div class="user-menu-container">
                 <button class="auth-btn" id="authBtn">Iniciar Sesión</button>
