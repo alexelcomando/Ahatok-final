@@ -650,12 +650,14 @@ async function handleVerifyEmail() {
             // onAuthStateChanged manejará el resto
         } else {
             // Email aún no verificado
-            await userCredential.user.sendEmailVerification({
-                url: window.location.origin,
-                handleCodeInApp: false
-            });
-            await auth.signOut();
-            alert('Tu email aún no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación. Luego intenta nuevamente.');
+                    try {
+                        await userCredential.user.sendEmailVerification();
+                        console.log('✅ Email de verificación re-enviado');
+                    } catch (emailError) {
+                        console.error('⚠️ Error al re-enviar email:', emailError);
+                    }
+                    await auth.signOut();
+                    alert('Tu email aún no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación. Luego intenta nuevamente.');
         }
     } catch (error) {
         console.error('❌ Error al verificar:', error);
