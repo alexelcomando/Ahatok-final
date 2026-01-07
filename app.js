@@ -279,7 +279,14 @@ async function downloadFromHistory(url, quality) {
         const videoData = await fetchVideo(url);
         const downloadUrl = videoData[quality] || videoData['720p'] || videoData.audio;
         if (downloadUrl) {
-            window.open(downloadUrl, '_blank');
+            // Descarga automática directa
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `${videoData.title || 'video'}_${quality}.${quality === 'audio' ? 'mp3' : 'mp4'}`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } else {
             alert('No se pudo obtener la URL de descarga. Por favor, intenta nuevamente.');
         }
@@ -354,7 +361,15 @@ async function handleQualityDownload(quality) {
     }
 
     if (downloadUrl) {
-        window.open(downloadUrl, '_blank');
+        // Descarga automática directa
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `${appState.videoData.title || 'video'}_${quality}.${quality === 'audio' ? 'mp3' : 'mp4'}`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
         // Guardar en historial
         await saveToHistory(appState.videoData, quality);
         // Recargar historial si estamos en esa vista
