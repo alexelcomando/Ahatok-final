@@ -536,9 +536,58 @@ async function processFacebook(url) {
         }
     }
     
-    // Método 2: Intentar con API externa para Facebook
+    // Método 2: Intentar seguir redirects para obtener URL real
     try {
-        console.log('🔄 Método 2: API externa para Facebook...');
+        console.log('🔄 Método 2: Siguiendo redirects...');
+        const redirectResponse = await axios.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            },
+            timeout: 25000,
+            maxRedirects: 10,
+            validateStatus: () => true // Aceptar todos los status codes
+        });
+        
+        const finalUrl = redirectResponse.request.res.responseUrl || redirectResponse.request.res.request.res.responseUrl || url;
+        console.log(`📍 URL final después de redirects: ${finalUrl}`);
+        
+        // Si la URL cambió, intentar procesarla
+        if (finalUrl !== url && finalUrl.includes('facebook.com')) {
+            const html = redirectResponse.data;
+            
+            // Buscar video en la nueva URL
+            const videoPatterns = [
+                /video_src["\']?\s*:\s*["\']([^"\']+)["\']/i,
+                /"video_url":"([^"]+)"/i,
+                /"playable_url":"([^"]+)"/i,
+                /"hd_src":"([^"]+)"/i,
+                /"sd_src":"([^"]+)"/i,
+                /source src=["\']([^"\']+\.mp4[^"\']*)["\']/i
+            ];
+            
+            for (const pattern of videoPatterns) {
+                const match = html.match(pattern);
+                if (match && match[1] && match[1].startsWith('http')) {
+                    const videoUrl = match[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+                    console.log('✅ Video encontrado después de redirect');
+                    return {
+                        thumbnail: null,
+                        "720p": videoUrl,
+                        "1080p": videoUrl,
+                        audio: null,
+                        title: "Video de Facebook"
+                    };
+                }
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Error siguiendo redirects:', error.message);
+    }
+    
+    // Método 3: Intentar con API externa para Facebook
+    try {
+        console.log('🔄 Método 3: API externa para Facebook...');
         const apiResponse = await axios.get(`https://api.saveig.app/api/ajaxSearch`, {
             params: {
                 q: url,
@@ -570,8 +619,58 @@ async function processFacebook(url) {
     } catch (error) {
         console.log('⚠️ API externa error:', error.message);
     }
+    
+    // Método 4: Intentar extraer ID del video y construir URL directa
+    try {
+        console.log('🔄 Método 4: Extrayendo ID del video...');
+        
+        // Para links compartidos, intentar obtener el ID real
+        const shareIdMatch = url.match(/share\/p\/([^\/\?]+)/i);
+        if (shareIdMatch) {
+            const shareId = shareIdMatch[1];
+            
+            // Intentar diferentes formatos de URL directa
+            const directUrls = [
+                `https://www.facebook.com/watch/?v=${shareId}`,
+                `https://www.facebook.com/video.php?v=${shareId}`,
+                `https://m.facebook.com/watch/?v=${shareId}`
+            ];
+            
+            for (const directUrl of directUrls) {
+                try {
+                    const response = await axios.get(directUrl, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                        },
+                        timeout: 20000,
+                        maxRedirects: 5
+                    });
+                    
+                    const html = response.data;
+                    const videoMatch = html.match(/(?:video_src|"video_url"|"playable_url"|"hd_src"|"sd_src")["\']?\s*:\s*["\']([^"\']+)["\']/i);
+                    
+                    if (videoMatch && videoMatch[1] && videoMatch[1].startsWith('http')) {
+                        const videoUrl = videoMatch[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+                        console.log('✅ Video encontrado con URL directa');
+                        return {
+                            thumbnail: null,
+                            "720p": videoUrl,
+                            "1080p": videoUrl,
+                            audio: null,
+                            title: "Video de Facebook"
+                        };
+                    }
+                } catch (e) {
+                    continue;
+                }
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Error extrayendo ID:', error.message);
+    }
 
-    throw new Error('No se pudo obtener el video de Facebook. Facebook tiene restricciones estrictas y requiere autenticación en muchos casos.');
+    throw new Error('No se pudo obtener el video de Facebook. Facebook tiene restricciones estrictas y requiere autenticación en muchos casos. Intenta con un video público o verifica que el link sea accesible sin login.');
 }
 
 /**
