@@ -503,10 +503,6 @@ function showAuthError(message) {
 // SISTEMA DE LOGIN SIMPLIFICADO (SOLO GOOGLE)
 // ============================================
 
-// ============================================
-// CONFIGURAR PANTALLA DE LOGIN (SOLO GOOGLE)
-// ============================================
-
 function setupLoginScreen() {
     console.log('🔧 Configurando login screen (solo Google)...');
 
