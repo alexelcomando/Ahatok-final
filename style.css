@@ -62,18 +62,24 @@ body {
     gap: 0.75rem;
 }
 
-.theme-label {
-    font-size: 1.25rem;
-    cursor: pointer;
+.theme-mode-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
     user-select: none;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.theme-label:hover {
-    transform: rotate(180deg);
+[data-theme="dark"] .theme-mode-label.dark {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .theme-mode-label.light {
+    color: var(--text-primary);
 }
 
 .theme-switch {
+    display: inline-flex;
+    align-items: center;
     position: relative;
     width: 60px;
     height: 32px;
