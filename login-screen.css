@@ -180,6 +180,81 @@
     opacity: 0.8;
 }
 
+.login-screen-back-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    text-align: left;
+    transition: opacity 0.2s;
+}
+
+.login-screen-back-btn:hover {
+    opacity: 0.8;
+}
+
+.login-screen-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.login-screen-form .form-group label {
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.verify-info {
+    color: #ffffff;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.verify-info strong {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.verify-code-input {
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 0.5rem;
+    font-weight: 600;
+}
+
+.login-screen-secondary-btn {
+    width: 100%;
+    padding: 0.875rem;
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+}
+
+.login-screen-secondary-btn:hover {
+    border-color: #ffffff;
+    background: #1a1a1a;
+}
+
+#loginScreenVerifyForm h3 {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
 /* Ocultar contenido principal cuando está en login screen */
 body:has(.login-screen:not(.hidden)) .main-content {
     display: none !important;
@@ -188,4 +263,3 @@ body:has(.login-screen:not(.hidden)) .main-content {
 body:has(.login-screen:not(.hidden)) .header {
     display: none !important;
 }
-
