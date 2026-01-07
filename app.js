@@ -380,10 +380,9 @@ function navigateTo(view) {
 async function processDownload() {
     // Verificar que el usuario esté autenticado
     if (!auth || !auth.currentUser) {
-        alert('Debes iniciar sesión para descargar videos. Por favor, regístrate o inicia sesión.');
-        if (document.getElementById('loginScreen')) {
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
+        alert('Debes iniciar sesión para descargar videos. Por favor, inicia sesión con Google.');
+        const loginScreen = document.getElementById('loginScreen');
+        if (loginScreen) loginScreen.classList.remove('hidden');
         return;
     }
 
@@ -613,6 +612,59 @@ function setupLoginScreen() {
     console.log('✅ Login screen configurado correctamente (solo Google)');
 }
 
+// Cargar AdSense solo después de autenticación (cumplir políticas)
+function loadAdSense() {
+    // Verificar si AdSense ya está cargado
+    if (window.adsbygoogle) {
+        return;
+    }
+
+    // Crear y cargar el script de AdSense dinámicamente
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4101809259492727';
+    script.crossOrigin = 'anonymous';
+    script.onload = () => {
+        console.log('✅ AdSense cargado correctamente');
+        // Inicializar banner en drawer después de cargar AdSense
+        initDrawerAd();
+    };
+    script.onerror = () => {
+        console.warn('⚠️ Error al cargar AdSense');
+    };
+    document.head.appendChild(script);
+}
+
+// Inicializar anuncio en el drawer (solo después de autenticación)
+function initDrawerAd() {
+    const adBanner = document.getElementById('adBanner');
+    if (!adBanner || !window.adsbygoogle) {
+        return;
+    }
+
+    // Limpiar placeholder
+    adBanner.innerHTML = '';
+
+    // Crear elemento de anuncio de AdSense para el drawer
+    const adElement = document.createElement('ins');
+    adElement.className = 'adsbygoogle';
+    adElement.style.display = 'block';
+    adElement.setAttribute('data-ad-client', 'ca-pub-4101809259492727');
+    adElement.setAttribute('data-ad-slot', 'TU_SLOT_DRAWER_AQUI'); // ⚠️ Reemplaza con tu slot ID cuando crees una unidad de anuncio
+    adElement.setAttribute('data-ad-format', 'auto');
+    adElement.setAttribute('data-full-width-responsive', 'true');
+
+    adBanner.appendChild(adElement);
+
+    // Inicializar el anuncio
+    try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        console.log('✅ Anuncio del drawer cargado');
+    } catch (e) {
+        console.warn('⚠️ Error al cargar anuncio del drawer:', e);
+    }
+}
+
 // Autenticación Firebase
 function initAuth() {
     if (!auth) {
@@ -629,20 +681,23 @@ function initAuth() {
         const header = document.querySelector('.header');
 
         if (user) {
-            // Usuario autenticado - mostrar app
+            // Usuario autenticado
             authBtn.textContent = user.displayName || user.email || 'Cerrar Sesión';
             authBtn.title = `Usuario: ${user.email}`;
             if (loginScreen) loginScreen.classList.add('hidden');
+            // Main content siempre visible (landing page pública)
             if (mainContent) mainContent.classList.remove('hidden');
             if (header) header.classList.remove('hidden');
             loadHistory();
+            // Cargar AdSense solo después de autenticación (cumplir políticas)
+            loadAdSense();
         } else {
-            // Usuario no autenticado - mostrar login screen
+            // Usuario no autenticado - landing page pública visible
             authBtn.textContent = 'Iniciar Sesión';
             authBtn.title = '';
-            if (loginScreen) loginScreen.classList.remove('hidden');
-            if (mainContent) mainContent.classList.add('hidden');
-            if (header) header.classList.add('hidden');
+            if (loginScreen) loginScreen.classList.add('hidden'); // Login oculto por defecto
+            if (mainContent) mainContent.classList.remove('hidden'); // Contenido siempre visible
+            if (header) header.classList.remove('hidden'); // Header siempre visible
         }
     });
 
@@ -655,6 +710,10 @@ function initAuth() {
                     alert('Error al cerrar sesión');
                 });
             }
+        } else {
+            // Mostrar modal de login si no está autenticado
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) loginScreen.classList.remove('hidden');
         }
     });
 
@@ -750,6 +809,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('closeSettingsBtn').addEventListener('click', () => {
         document.getElementById('settingsModal').classList.add('hidden');
+    });
+
+    // Cerrar login modal
+    const closeLoginBtn = document.getElementById('closeLoginBtn');
+    if (closeLoginBtn) {
+        closeLoginBtn.addEventListener('click', () => {
+            document.getElementById('loginScreen').classList.add('hidden');
+        });
+    }
+
+    // Modales legales
+    const privacyLink = document.getElementById('privacyLink');
+    const termsLink = document.getElementById('termsLink');
+    const contactLink = document.getElementById('contactLink');
+
+    if (privacyLink) {
+        privacyLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('privacyModal').classList.remove('hidden');
+        });
+    }
+
+    if (termsLink) {
+        termsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('termsModal').classList.remove('hidden');
+        });
+    }
+
+    if (contactLink) {
+        contactLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('contactModal').classList.remove('hidden');
+        });
+    }
+
+    // Cerrar modales legales
+    const closePrivacyBtn = document.getElementById('closePrivacyBtn');
+    const closeTermsBtn = document.getElementById('closeTermsBtn');
+    const closeContactBtn = document.getElementById('closeContactBtn');
+
+    if (closePrivacyBtn) {
+        closePrivacyBtn.addEventListener('click', () => {
+            document.getElementById('privacyModal').classList.add('hidden');
+        });
+    }
+
+    if (closeTermsBtn) {
+        closeTermsBtn.addEventListener('click', () => {
+            document.getElementById('termsModal').classList.add('hidden');
+        });
+    }
+
+    if (closeContactBtn) {
+        closeContactBtn.addEventListener('click', () => {
+            document.getElementById('contactModal').classList.add('hidden');
+        });
+    }
+
+    // Cerrar modales al hacer clic fuera
+    const legalModals = ['privacyModal', 'termsModal', 'contactModal'];
+    legalModals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
     });
 
     // Cambio de tema

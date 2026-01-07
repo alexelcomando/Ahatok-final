@@ -13,10 +13,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="apple-touch-icon" href="favicon-32x32.png">
 
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4101809259492727"
-        crossorigin="anonymous"></script>
-
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -46,19 +42,19 @@
         </div>
         <nav class="drawer-nav">
             <button class="drawer-item" id="homeBtn">
-                <span class="icon">🏠</span>
+                <span class="icon"></span>
                 Inicio
             </button>
             <button class="drawer-item" id="historyBtn">
-                <span class="icon">📥</span>
+                <span class="icon"></span>
                 Historial
             </button>
             <button class="drawer-item" id="premiumBtn">
-                <span class="icon">⭐</span>
+                <span class="icon"></span>
                 Actualizar a Premium
             </button>
             <button class="drawer-item" id="settingsBtn">
-                <span class="icon">⚙️</span>
+                <span class="icon"></span>
                 Configuración
             </button>
         </nav>
@@ -67,45 +63,16 @@
         </div>
     </aside>
 
-    <!-- Login Screen (Bloquea acceso hasta login) -->
-    <div class="login-screen" id="loginScreen">
-        <div class="login-screen-content">
-            <div class="login-screen-header">
-                <div class="logo-container">
-                    <img src="imagenes/Logos/Application%20logo.png" alt="AhaTok" class="app-logo" id="homeLogo">
-                    <h1 class="login-screen-logo">AhaTok</h1>
-                </div>
-            </div>
-            <div class="login-screen-body">
-                <h2>Inicie sesion en AhaTok</h2>
-                <div class="login-screen-form" id="loginScreenInitialForm">
-                    <div class="login-screen-options">
-                        <button class="login-screen-option-btn" id="loginScreenGoogleBtn">
-                            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
-                                <path fill="#4285F4"
-                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                                <path fill="#34A853"
-                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                                <path fill="#FBBC05"
-                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                                <path fill="#EA4335"
-                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                            </svg>
-                            Continue con Google
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="main-content hidden" id="mainContent">
+    <!-- Main Content (Visible por defecto - Landing Page Pública) -->
+    <main class="main-content" id="mainContent">
         <!-- Home View -->
         <section class="view" id="homeView">
             <div class="container">
                 <div class="input-section">
                     <h2>Descarga tus videos favoritos</h2>
+                    <p class="description-text">AhaTok es una herramienta gratuita y fácil de usar para descargar videos
+                        de alta calidad desde TikTok, Instagram y Facebook. Simplemente pega el enlace del video que
+                        deseas descargar y elige la calidad que prefieras.</p>
                     <div class="url-input-container">
                         <input type="text" id="videoUrl" class="url-input"
                             placeholder="Pega el enlace del video aquí..." autocomplete="off">
@@ -115,33 +82,156 @@
                     </div>
                 </div>
 
-                <div class="social-icons">
-                    <div class="social-item">
-                        <div class="social-icon tiktok">
-                            <img src="imagenes/iconos/tik%20tok%20icon.webp" alt="TikTok" class="social-logo">
+                <div class="features-section">
+                    <h3>Plataformas Soportadas</h3>
+                    <p class="features-description">Descarga videos desde las principales redes sociales. Soporta
+                        múltiples formatos y calidades para que disfrutes de tus videos favoritos sin conexión a
+                        internet.</p>
+                    <div class="social-icons">
+                        <div class="social-item">
+                            <div class="social-icon tiktok">
+                                <img src="imagenes/iconos/tik%20tok%20icon.webp" alt="TikTok" class="social-logo">
+                            </div>
+                            <span>TikTok</span>
+                            <p class="social-description">Descarga videos de TikTok en alta calidad, incluyendo videos
+                                compartidos y enlaces cortos.</p>
                         </div>
-                        <span>TikTok</span>
-                    </div>
-                    <div class="social-item">
-                        <div class="social-icon instagram">
-                            <img src="imagenes/iconos/Instagram%20icon.jpg" alt="Instagram" class="social-logo">
+                        <div class="social-item">
+                            <div class="social-icon instagram">
+                                <img src="imagenes/iconos/Instagram%20icon.jpg" alt="Instagram" class="social-logo">
+                            </div>
+                            <span>Instagram</span>
+                            <p class="social-description">Descarga posts, reels y videos de Instagram en formato MP4 o
+                                solo el audio en MP3.</p>
                         </div>
-                        <span>Instagram</span>
-                    </div>
-                    <div class="social-item">
-                        <div class="social-icon facebook">
-                            <img src="imagenes/iconos/facebook%20icon.webp" alt="Facebook" class="social-logo">
+                        <div class="social-item">
+                            <div class="social-icon facebook">
+                                <img src="imagenes/iconos/facebook%20icon.webp" alt="Facebook" class="social-logo">
+                            </div>
+                            <span>Facebook</span>
+                            <p class="social-description">Descarga videos de Facebook, incluyendo videos compartidos y
+                                publicaciones con video.</p>
                         </div>
-                        <span>Facebook</span>
                     </div>
                 </div>
 
                 <div class="frequent-downloads">
                     <h3>Descargados frecuentemente</h3>
+                    <p class="section-description">Videos que has descargado recientemente. Haz clic en cualquier video
+                        para descargarlo nuevamente.</p>
                     <div class="downloads-grid" id="downloadsGrid">
                         <!-- Se llenará dinámicamente -->
                     </div>
                 </div>
+
+                <!-- Sección de contenido extenso para cumplir políticas AdSense -->
+                <article class="content-article">
+                    <h2>¿Qué es AhaTok y cómo funciona?</h2>
+                    <p>AhaTok es una plataforma web gratuita diseñada para ayudarte a descargar videos de alta calidad
+                        desde las principales redes sociales: TikTok, Instagram y Facebook. Nuestra herramienta es
+                        completamente gratuita y no requiere instalación de software adicional. Todo funciona
+                        directamente desde tu navegador web, ya sea en tu computadora, tablet o dispositivo móvil.</p>
+
+                    <h3>Características principales de AhaTok</h3>
+                    <p>AhaTok ofrece una experiencia de usuario simplificada y eficiente. Una de las características más
+                        destacadas es la capacidad de descargar videos en múltiples calidades. Los usuarios pueden
+                        elegir entre calidad 720p (HD gratuito), 1080p (Full HD premium) o extraer solo el audio en
+                        formato MP3. Esta flexibilidad permite a los usuarios adaptar las descargas según sus
+                        necesidades de almacenamiento o calidad deseada.</p>
+
+                    <p>La plataforma soporta una amplia variedad de formatos de enlaces. Para TikTok, puedes usar
+                        enlaces estándar, enlaces cortos (vm.tiktok.com, vt.tiktok.com), y enlaces compartidos. Para
+                        Instagram, la herramienta reconoce posts regulares (/p/), reels (/reel/), videos de TV (/tv/), y
+                        stories. En cuanto a Facebook, AhaTok puede procesar videos compartidos, publicaciones con
+                        video, y enlaces de watch, entre otros formatos.</p>
+
+                    <h3>¿Cómo usar AhaTok paso a paso?</h3>
+                    <p>Usar AhaTok es extremadamente sencillo. El proceso consta de tres pasos simples:</p>
+                    <ol>
+                        <li><strong>Encuentra el video que deseas descargar:</strong> Navega por TikTok, Instagram o
+                            Facebook y encuentra el video que te interesa. Puede ser un video viral, un tutorial,
+                            música, o cualquier contenido que quieras guardar para verlo sin conexión a internet.</li>
+                        <li><strong>Copia el enlace del video:</strong> Una vez que encuentres el video, copia su
+                            enlace. En TikTok, puedes hacer clic en "Compartir" y luego "Copiar enlace". En Instagram,
+                            toca los tres puntos y selecciona "Copiar enlace". En Facebook, simplemente copia la URL de
+                            la barra de direcciones.</li>
+                        <li><strong>Pega el enlace en AhaTok y descarga:</strong> Regresa a AhaTok, pega el enlace en el
+                            cuadro de búsqueda y haz clic en "Descargar". El sistema procesará el video y te mostrará
+                            las opciones de calidad disponibles. Selecciona la calidad que prefieras y el video
+                            comenzará a descargarse automáticamente a tu dispositivo.</li>
+                    </ol>
+
+                    <h3>Compatibilidad y requisitos del sistema</h3>
+                    <p>AhaTok es compatible con todos los navegadores modernos, incluyendo Google Chrome, Mozilla
+                        Firefox, Microsoft Edge, Safari y Opera. No requiere plugins adicionales ni extensiones del
+                        navegador. La herramienta funciona tanto en sistemas operativos Windows, macOS, Linux como en
+                        dispositivos móviles iOS y Android.</p>
+
+                    <p>Para obtener la mejor experiencia, recomendamos usar una conexión a internet estable. El tiempo
+                        de procesamiento varía según la duración y calidad del video, pero generalmente toma entre 10 y
+                        30 segundos. Los videos más largos o de mayor calidad pueden requerir más tiempo de
+                        procesamiento.</p>
+
+                    <h3>Beneficios de usar AhaTok</h3>
+                    <p>Una de las principales ventajas de AhaTok es que permite a los usuarios acceder a sus videos
+                        favoritos sin necesidad de conexión a internet. Esto es especialmente útil cuando viajas, cuando
+                        tienes datos limitados, o cuando quieres crear una biblioteca personal de contenido.</p>
+
+                    <p>Además, AhaTok respeta la privacidad de los usuarios. No almacenamos los videos descargados en
+                        nuestros servidores. El proceso de descarga es directo: el video se procesa y se descarga
+                        directamente a tu dispositivo. Tampoco requerimos información personal innecesaria para usar la
+                        herramienta básica.</p>
+
+                    <h3>Consideraciones legales y uso responsable</h3>
+                    <p>Es importante mencionar que AhaTok es una herramienta diseñada para uso personal y educativo. Los
+                        usuarios son responsables de respetar los derechos de autor y las políticas de uso de las
+                        plataformas de origen. Recomendamos descargar solo contenido que tengas permiso para descargar,
+                        como tus propios videos o contenido con licencia apropiada.</p>
+
+                    <p>No utilizamos los videos descargados para ningún propósito comercial ni los redistribuimos. Cada
+                        descarga es procesada individualmente y el archivo se entrega directamente al usuario. No
+                        mantenemos copias de los videos en nuestros servidores después del procesamiento.</p>
+
+                    <h3>Actualizaciones y mejoras continuas</h3>
+                    <p>El equipo de AhaTok trabaja constantemente para mejorar la plataforma. Regularmente actualizamos
+                        nuestros algoritmos para soportar nuevos formatos de enlaces y mejorar la calidad de las
+                        descargas. También optimizamos el rendimiento del servidor para reducir los tiempos de
+                        procesamiento y mejorar la experiencia general del usuario.</p>
+
+                    <p>Si encuentras algún problema o tienes sugerencias para mejorar la plataforma, puedes contactarnos
+                        a través de nuestra página de contacto. Valoramos el feedback de nuestros usuarios y lo
+                        utilizamos para hacer de AhaTok una herramienta cada vez mejor.</p>
+                </article>
+
+                <!-- Sección de guía de uso -->
+                <section class="guide-section">
+                    <h2>Guía completa: Cómo descargar videos legalmente</h2>
+                    <p>Descargar videos de redes sociales puede ser útil para diversos propósitos, pero es importante
+                        hacerlo de manera legal y ética. Aquí te explicamos las mejores prácticas:</p>
+
+                    <h3>Descargar tus propios videos</h3>
+                    <p>La forma más segura y legal de usar AhaTok es descargar tus propios videos. Si creaste el
+                        contenido, tienes todos los derechos para descargarlo y guardarlo en tus dispositivos. Esto es
+                        especialmente útil para crear backups de tus creaciones o para editar tus propios videos en
+                        otras aplicaciones.</p>
+
+                    <h3>Contenido con licencia Creative Commons</h3>
+                    <p>Algunos creadores publican su contenido bajo licencias Creative Commons que permiten la descarga
+                        y uso con ciertas restricciones. Si un video tiene una licencia que permite la descarga, puedes
+                        usar AhaTok para guardarlo, siempre respetando los términos de la licencia (como atribución al
+                        creador original).</p>
+
+                    <h3>Uso educativo y de investigación</h3>
+                    <p>En contextos educativos o de investigación, puede ser permisible descargar videos para análisis,
+                        citas académicas o estudios de caso. Sin embargo, siempre debes verificar las políticas
+                        específicas de la plataforma y considerar el uso justo (fair use) según las leyes de tu país.
+                    </p>
+
+                    <h3>Respetar los derechos de autor</h3>
+                    <p>Es fundamental respetar los derechos de autor. No debes descargar contenido para redistribuirlo,
+                        venderlo, o usarlo comercialmente sin el permiso del creador. AhaTok está diseñado para uso
+                        personal y no debe utilizarse para violar los derechos de propiedad intelectual.</p>
+                </section>
             </div>
         </section>
 
@@ -224,6 +314,158 @@
                         <option value="light">Claro</option>
                     </select>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer con enlaces legales -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>AhaTok</h4>
+                <p>Herramienta gratuita para descargar videos de TikTok, Instagram y Facebook.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Enlaces</h4>
+                <ul class="footer-links">
+                    <li><a href="#home">Inicio</a></li>
+                    <li><a href="#privacy" id="privacyLink">Política de Privacidad</a></li>
+                    <li><a href="#terms" id="termsLink">Términos de Servicio</a></li>
+                    <li><a href="#contact" id="contactLink">Contacto</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Información Legal</h4>
+                <p>AhaTok es una herramienta de uso personal. Los usuarios son responsables de respetar los derechos de
+                    autor y las políticas de las plataformas de origen.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 AhaTok. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal (Solo aparece cuando se intenta descargar sin estar autenticado) -->
+    <div class="login-screen hidden" id="loginScreen">
+        <div class="login-screen-content">
+            <div class="login-screen-header">
+                <div class="logo-container">
+                    <img src="imagenes/Logos/Application%20logo.png" alt="AhaTok" class="app-logo">
+                    <h1 class="login-screen-logo">AhaTok</h1>
+                </div>
+                <button class="close-login-btn" id="closeLoginBtn">&times;</button>
+            </div>
+            <div class="login-screen-body">
+                <h2>Inicia sesión para descargar</h2>
+                <p class="login-description">Necesitas iniciar sesión para descargar videos. Es rápido y seguro.</p>
+                <div class="login-screen-form" id="loginScreenInitialForm">
+                    <div class="login-screen-options">
+                        <button class="login-screen-option-btn" id="loginScreenGoogleBtn">
+                            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="#4285F4"
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                <path fill="#34A853"
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                <path fill="#FBBC05"
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                <path fill="#EA4335"
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                            </svg>
+                            Continuar con Google
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Páginas de cumplimiento (modales) -->
+    <div class="legal-modal hidden" id="privacyModal">
+        <div class="legal-modal-content">
+            <button class="close-legal-btn" id="closePrivacyBtn">&times;</button>
+            <h2>Política de Privacidad</h2>
+            <div class="legal-content">
+                <p><strong>Última actualización:</strong> Enero 2025</p>
+                <h3>1. Información que recopilamos</h3>
+                <p>AhaTok recopila información mínima necesaria para proporcionar nuestros servicios. Cuando te
+                    registras usando Google, recibimos tu nombre de usuario, dirección de email y foto de perfil
+                    asociada con tu cuenta de Google.</p>
+                <h3>2. Uso de la información</h3>
+                <p>Utilizamos la información recopilada únicamente para: proporcionar y mejorar nuestros servicios,
+                    mantener tu historial de descargas, y comunicarnos contigo sobre actualizaciones importantes del
+                    servicio.</p>
+                <h3>3. Almacenamiento de datos</h3>
+                <p>Tus datos se almacenan de forma segura en Firebase, una plataforma de Google. No almacenamos videos
+                    descargados en nuestros servidores. Cada descarga se procesa y entrega directamente a tu
+                    dispositivo.</p>
+                <h3>4. Cookies y tecnologías de seguimiento</h3>
+                <p>Utilizamos cookies esenciales para mantener tu sesión activa. No utilizamos cookies de seguimiento de
+                    terceros para publicidad.</p>
+                <h3>5. Tus derechos</h3>
+                <p>Tienes derecho a acceder, modificar o eliminar tu información personal en cualquier momento. Puedes
+                    hacerlo desde la configuración de tu cuenta o contactándonos directamente.</p>
+                <h3>6. Cambios a esta política</h3>
+                <p>Nos reservamos el derecho de actualizar esta política de privacidad. Te notificaremos de cambios
+                    significativos por email o mediante un aviso en nuestro sitio web.</p>
+                <h3>7. Contacto</h3>
+                <p>Si tienes preguntas sobre esta política de privacidad, puedes contactarnos a través de nuestra página
+                    de contacto.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="legal-modal hidden" id="termsModal">
+        <div class="legal-modal-content">
+            <button class="close-legal-btn" id="closeTermsBtn">&times;</button>
+            <h2>Términos de Servicio</h2>
+            <div class="legal-content">
+                <p><strong>Última actualización:</strong> Enero 2025</p>
+                <h3>1. Aceptación de los términos</h3>
+                <p>Al acceder y usar AhaTok, aceptas cumplir con estos términos de servicio. Si no estás de acuerdo con
+                    alguna parte de estos términos, no debes usar nuestro servicio.</p>
+                <h3>2. Descripción del servicio</h3>
+                <p>AhaTok es una herramienta web que permite a los usuarios descargar videos de TikTok, Instagram y
+                    Facebook. El servicio se proporciona "tal cual" sin garantías de ningún tipo.</p>
+                <h3>3. Uso aceptable</h3>
+                <p>Te comprometes a usar AhaTok solo para fines legales y de acuerdo con estos términos. No debes usar
+                    el servicio para: violar derechos de autor, redistribuir contenido sin permiso, o cualquier
+                    actividad ilegal.</p>
+                <h3>4. Responsabilidad del usuario</h3>
+                <p>Eres responsable de asegurarte de que tienes derecho a descargar cualquier contenido que proceses a
+                    través de AhaTok. No somos responsables por el uso indebido del servicio.</p>
+                <h3>5. Limitación de responsabilidad</h3>
+                <p>AhaTok se proporciona "tal cual" sin garantías. No garantizamos que el servicio esté siempre
+                    disponible, libre de errores, o que cumpla con tus expectativas específicas.</p>
+                <h3>6. Modificaciones del servicio</h3>
+                <p>Nos reservamos el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio en
+                    cualquier momento sin previo aviso.</p>
+                <h3>7. Propiedad intelectual</h3>
+                <p>Todo el contenido de AhaTok, incluyendo diseño, logos y código, es propiedad de AhaTok y está
+                    protegido por leyes de propiedad intelectual.</p>
+                <h3>8. Terminación</h3>
+                <p>Podemos terminar o suspender tu acceso al servicio inmediatamente, sin previo aviso, por cualquier
+                    violación de estos términos.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="legal-modal hidden" id="contactModal">
+        <div class="legal-modal-content">
+            <button class="close-legal-btn" id="closeContactBtn">&times;</button>
+            <h2>Contacto</h2>
+            <div class="legal-content">
+                <p>Si tienes preguntas, comentarios o necesitas soporte, puedes contactarnos a través de los siguientes
+                    medios:</p>
+                <h3>Información de contacto</h3>
+                <p><strong>Email:</strong> contacto@ahatok.com</p>
+                <p><strong>Sitio web:</strong> ahatok-final.vercel.app</p>
+                <h3>Horario de atención</h3>
+                <p>Estamos disponibles para responder consultas de lunes a viernes, de 9:00 AM a 6:00 PM (GMT-5).</p>
+                <h3>Tipos de consultas</h3>
+                <p>Puedes contactarnos para: reportar problemas técnicos, solicitar nuevas funcionalidades, preguntas
+                    sobre privacidad, o cualquier otra consulta relacionada con el servicio.</p>
+                <h3>Tiempo de respuesta</h3>
+                <p>Nos esforzamos por responder todas las consultas en un plazo máximo de 48 horas hábiles.</p>
             </div>
         </div>
     </div>
