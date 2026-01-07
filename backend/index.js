@@ -22,7 +22,13 @@ function cleanUrl(url) {
         const urlObj = new URL(url);
         // Para TikTok, mantener solo el pathname esencial
         if (urlObj.hostname.includes('tiktok.com')) {
-            // Extraer solo la parte esencial: /@user/video/ID
+            // Si es una URL acortada (vt.tiktok.com), mantenerla tal cual
+            if (urlObj.hostname.includes('vt.') || urlObj.hostname.includes('vm.')) {
+                // Solo remover parámetros de query
+                urlObj.search = '';
+                return urlObj.toString();
+            }
+            // Para URLs normales, extraer solo la parte esencial: /@user/video/ID
             const match = url.match(/tiktok\.com\/(@[\w.]+)\/video\/(\d+)/i);
             if (match) {
                 return `https://www.tiktok.com/${match[1]}/video/${match[2]}`;
