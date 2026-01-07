@@ -34,6 +34,17 @@ function cleanUrl(url) {
                 return `https://www.tiktok.com/${match[1]}/video/${match[2]}`;
             }
         }
+        // Para Instagram, mantener la estructura pero limpiar parámetros
+        if (urlObj.hostname.includes('instagram.com') || urlObj.hostname.includes('instagr.am')) {
+            urlObj.search = '';
+            return urlObj.toString();
+        }
+        // Para Facebook, mantener la estructura pero limpiar parámetros
+        if (urlObj.hostname.includes('facebook.com') || urlObj.hostname.includes('fb.com') || urlObj.hostname.includes('fb.watch')) {
+            // Para URLs compartidas, mantener la estructura
+            urlObj.search = '';
+            return urlObj.toString();
+        }
         // Para otras plataformas, remover parámetros de tracking
         urlObj.search = '';
         return urlObj.toString();
