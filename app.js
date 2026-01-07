@@ -499,6 +499,84 @@ function showAuthError(message) {
     }, 5000);
 }
 
+// Configurar pantalla de login inicial
+function setupLoginScreen() {
+    // Login con email desde login screen
+    const loginScreenEmailBtn = document.getElementById('loginScreenEmailBtn');
+    const loginScreenEmail = document.getElementById('loginScreenEmail');
+    
+    if (loginScreenEmailBtn && loginScreenEmail) {
+        loginScreenEmailBtn.addEventListener('click', async () => {
+            const email = loginScreenEmail.value.trim();
+            if (!email) {
+                alert('Por favor, ingresa tu email');
+                return;
+            }
+            
+            // Mostrar modal de login con email prellenado
+            const loginScreen = document.getElementById('loginScreen');
+            const loginModal = document.getElementById('loginModal');
+            if (loginScreen) loginScreen.classList.add('hidden');
+            if (loginModal) {
+                loginModal.classList.remove('hidden');
+                document.getElementById('emailLoginBtn').click();
+                document.getElementById('loginEmail').value = email;
+            }
+        });
+    }
+
+    // Login con Google desde login screen
+    const loginScreenGoogleBtn = document.getElementById('loginScreenGoogleBtn');
+    if (loginScreenGoogleBtn) {
+        loginScreenGoogleBtn.addEventListener('click', async () => {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                console.error('Error en login con Google:', error);
+                alert('Error al iniciar sesión con Google. Por favor, intenta nuevamente.');
+            }
+        });
+    }
+
+    // Sign up desde login screen
+    const loginScreenSignupLink = document.getElementById('loginScreenSignupLink');
+    const signupBtnTop = document.getElementById('signupBtnTop');
+    
+    const showSignup = () => {
+        const loginScreen = document.getElementById('loginScreen');
+        const loginModal = document.getElementById('loginModal');
+        if (loginScreen) loginScreen.classList.add('hidden');
+        if (loginModal) {
+            loginModal.classList.remove('hidden');
+            document.getElementById('emailRegisterBtn').click();
+        }
+    };
+    
+    if (loginScreenSignupLink) {
+        loginScreenSignupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignup();
+        });
+    }
+    
+    if (signupBtnTop) {
+        signupBtnTop.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignup();
+        });
+    }
+
+    // Enter key en input de email
+    if (loginScreenEmail) {
+        loginScreenEmail.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginScreenEmailBtn.click();
+            }
+        });
+    }
+}
+
 // Autenticación Firebase
 function initAuth() {
     if (!auth) {
