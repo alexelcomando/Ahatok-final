@@ -53,37 +53,67 @@ async function processWithCobalt(url) {
             timeout: 30000 // 30 segundos para Render
         });
 
-        if (response.data && response.data.status === 'success') {
+        if (response.data) {
             const data = response.data;
             
-            // Cobalt devuelve diferentes formatos, necesitamos extraer el mejor
+            // Cobalt puede devolver diferentes estructuras
+            // Intentar extraer el video de diferentes formas
             let videoUrl720 = null;
             let videoUrl1080 = null;
             let audioUrl = null;
+            let thumbnail = null;
+            let title = null;
             
-            // Buscar el mejor video disponible
-            if (data.url) {
-                // Si hay una URL directa
+            // Estructura 1: data.url (URL directa)
+            if (data.url && typeof data.url === 'string') {
                 videoUrl720 = data.url;
                 videoUrl1080 = data.url;
-            } else if (data.video) {
-                videoUrl720 = data.video;
-                videoUrl1080 = data.video;
+            }
+            // Estructura 2: data.video (objeto con URLs)
+            else if (data.video) {
+                if (typeof data.video === 'string') {
+                    videoUrl720 = data.video;
+                    videoUrl1080 = data.video;
+                } else if (data.video.url) {
+                    videoUrl720 = data.video.url;
+                    videoUrl1080 = data.video.url;
+                }
+            }
+            // Estructura 3: data.text (URL del video)
+            else if (data.text && data.text.startsWith('http')) {
+                videoUrl720 = data.text;
+                videoUrl1080 = data.text;
             }
             
-            // Buscar audio
+            // Audio
             if (data.audio) {
-                audioUrl = data.audio;
+                audioUrl = typeof data.audio === 'string' ? data.audio : data.audio.url;
             }
             
-            return {
-                thumbnail: data.thumbnail || null,
-                "720p": videoUrl720 || null,
-                "1080p": videoUrl1080 || null,
-                audio: audioUrl || null,
-                title: data.text || data.title || "Video descargado"
-            };
+            // Thumbnail
+            thumbnail = data.thumbnail || data.image || null;
+            
+            // Title
+            title = data.text || data.title || data.name || "Video descargado";
+            // Si title es una URL, usar un título por defecto
+            if (title && title.startsWith('http')) {
+                title = "Video descargado";
+            }
+            
+            // Validar que tenemos al menos una URL de video
+            if (videoUrl720 || videoUrl1080) {
+                return {
+                    thumbnail: thumbnail,
+                    "720p": videoUrl720 || videoUrl1080,
+                    "1080p": videoUrl1080 || videoUrl720,
+                    audio: audioUrl,
+                    title: title
+                };
+            }
         }
+        
+        // Si llegamos aquí, la respuesta no tiene el formato esperado
+        throw new Error('Cobalt API devolvió una respuesta sin URLs de video');
     } catch (error) {
         console.log('⚠️ Cobalt API error:', error.message);
         throw error;
