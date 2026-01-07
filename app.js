@@ -506,11 +506,18 @@ function initAuth() {
         }
     });
 
-    // Mostrar formulario de email
+    // Mostrar formulario de email (login)
     document.getElementById('emailLoginBtn').addEventListener('click', () => {
         document.querySelector('.login-options').classList.add('hidden');
         document.getElementById('emailLoginForm').classList.remove('hidden');
         document.getElementById('emailRegisterForm').classList.add('hidden');
+    });
+
+    // Mostrar formulario de registro
+    document.getElementById('emailRegisterBtn').addEventListener('click', () => {
+        document.querySelector('.login-options').classList.add('hidden');
+        document.getElementById('emailRegisterForm').classList.remove('hidden');
+        document.getElementById('emailLoginForm').classList.add('hidden');
     });
 
     // Cambiar a registro
