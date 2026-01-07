@@ -48,24 +48,43 @@ body {
     z-index: 100;
 }
 
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--accent);
+.logo-container {
     flex: 1;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
     cursor: pointer;
     transition: opacity 0.2s, transform 0.2s;
     user-select: none;
 }
 
-.logo:hover {
+.logo-container:hover {
     opacity: 0.8;
     transform: scale(1.05);
 }
 
-.logo:active {
+.logo-container:active {
     transform: scale(0.95);
+}
+
+.app-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: filter 0.3s;
+}
+
+[data-theme="light"] .app-logo {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 0;
 }
 
 .menu-btn {
@@ -314,8 +333,8 @@ body {
 }
 
 .social-icon {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background-color: var(--bg-card);
     display: flex;
@@ -323,31 +342,61 @@ body {
     justify-content: center;
     border: 2px solid var(--border-color);
     transition: all 0.3s;
-    padding: 12px;
+    padding: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+[data-theme="light"] .social-icon {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-color: var(--border-color);
 }
 
 .social-logo {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    border-radius: 50%;
+    transition: transform 0.3s, filter 0.3s;
 }
 
-/* Colores específicos para cada red social */
+/* Efectos hover para los logos */
+.social-item:hover .social-logo {
+    transform: scale(1.1);
+}
+
+/* Ajustes para modo oscuro */
+[data-theme="dark"] .social-logo {
+    filter: brightness(1.1) contrast(1.1);
+}
+
+/* Ajustes para modo claro */
+[data-theme="light"] .social-logo {
+    filter: brightness(0.95) contrast(1.05);
+}
+
+/* Fondos sutiles para cada red social (opcional, solo si las imágenes necesitan contraste) */
 .social-icon.tiktok {
-    background: linear-gradient(135deg, #000000 0%, #ff0050 100%);
+    background: var(--bg-card);
 }
 
 .social-icon.instagram {
-    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    background: var(--bg-card);
 }
 
 .social-icon.facebook {
-    background: linear-gradient(135deg, #1877f2 0%, #42a5f5 100%);
+    background: var(--bg-card);
 }
 
-.social-logo {
-    filter: brightness(0) invert(1);
+/* Efectos hover mejorados */
+.social-item:hover .social-icon {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+    transform: translateY(-2px);
+}
+
+[data-theme="light"] .social-item:hover .social-icon {
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.2);
 }
 
 .social-item:hover .social-icon {
