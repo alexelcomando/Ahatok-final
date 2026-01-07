@@ -132,32 +132,47 @@ function detectSocialNetwork(url) {
         normalizedUrl = 'https://' + normalizedUrl;
     }
 
+    let parsed;
+    try {
+        parsed = new URL(normalizedUrl);
+    } catch (e) {
+        parsed = null;
+    }
+
+    const hostname = parsed ? parsed.hostname.toLowerCase() : '';
+    const pathname = parsed ? (parsed.pathname || '') : normalizedUrl;
+    const search = parsed ? (parsed.search || '') : '';
+
     // TikTok
-    if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(normalizedUrl)) {
+    if ((hostname && (hostname.includes('tiktok.com') || hostname.includes('vm.tiktok.com') || hostname.includes('vt.tiktok.com'))) ||
+        /tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(normalizedUrl)) {
         return 'tiktok';
     }
 
     // Instagram - múltiples formatos
-    if (/instagram\.com|instagr\.am/i.test(normalizedUrl)) {
-        // Verificar formatos: /p/ID, /reel/ID, /tv/ID, /stories/username/ID, username/p/ID
-        if (/\/(p|reel|tv|stories)\//i.test(normalizedUrl) ||
-            /instagram\.com\/[\w.]+\/(p|reel|tv)\//i.test(normalizedUrl) ||
-            /instagram\.com\/[\w.]+\/[\w-]+/i.test(normalizedUrl)) {
+    const isInstagramHost = hostname
+        ? (hostname === 'instagram.com' || hostname.endsWith('.instagram.com') || hostname === 'instagr.am' || hostname.endsWith('.instagr.am'))
+        : /instagram\.com|instagr\.am/i.test(normalizedUrl);
+
+    if (isInstagramHost) {
+        if (/(^|\/)(p|reel|tv|stories)\//i.test(pathname) ||
+            /\/(share|s)\//i.test(pathname) ||
+            pathname.length > 1) {
             return 'instagram';
         }
     }
 
     // Facebook - múltiples formatos y dominios
-    if (/facebook\.com|fb\.com|fb\.watch/i.test(normalizedUrl)) {
-        // Verificar múltiples formatos
-        if (/\/videos\/|\/video\.php|\/share\/p\/|\/watch\/|\/posts\/|\/permalink\.php|\/photo\.php|\/reel\//i.test(normalizedUrl) ||
-            /facebook\.com\/[\w.]+\/videos\/|\/posts\//i.test(normalizedUrl) ||
-            /fb\.watch\/|fb\.com\/watch/i.test(normalizedUrl) ||
-            /\?v=|\?story_fbid=/i.test(normalizedUrl)) {
-            return 'facebook';
-        }
-        // También aceptar URLs de Facebook sin formato específico (pueden ser videos)
-        if (/facebook\.com\/[\w.]+\//i.test(normalizedUrl)) {
+    const isFacebookHost = hostname
+        ? (hostname === 'facebook.com' || hostname.endsWith('.facebook.com') || hostname === 'fb.com' || hostname.endsWith('.fb.com') || hostname === 'fb.watch' || hostname.endsWith('.fb.watch'))
+        : /facebook\.com|fb\.com|fb\.watch/i.test(normalizedUrl);
+
+    if (isFacebookHost) {
+        if (/(^|\/)(videos|video\.php|watch|reel|posts|permalink\.php|photo\.php|story\.php)\b/i.test(pathname) ||
+            /\/(share|share\/v|share\/r|share\/p)\//i.test(pathname) ||
+            /[?&](v|story_fbid|fbid)=/i.test(search) ||
+            (hostname.includes('fb.watch') && pathname.length > 1) ||
+            pathname.length > 1) {
             return 'facebook';
         }
     }
