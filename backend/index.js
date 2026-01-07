@@ -41,6 +41,11 @@ function cleanUrl(url) {
         }
         // Para Facebook, mantener la estructura pero limpiar parámetros innecesarios
         if (urlObj.hostname.includes('facebook.com') || urlObj.hostname.includes('fb.com') || urlObj.hostname.includes('fb.watch')) {
+            // Para links compartidos (/share/p/ID), mantenerlos tal cual
+            if (urlObj.pathname.includes('/share/p/')) {
+                urlObj.search = '';
+                return urlObj.toString();
+            }
             // Mantener parámetros importantes como ?v= o ?story_fbid= pero limpiar tracking
             const importantParams = ['v', 'story_fbid', 'id'];
             const newSearch = new URLSearchParams();
