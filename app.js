@@ -46,6 +46,77 @@ const appState = {
     history: []
 };
 
+// Función para mostrar alerta personalizada
+function showCustomAlert(title, message, cancelText = 'Cancelar', confirmText = 'Aceptar') {
+    return new Promise((resolve) => {
+        // Crear overlay si no existe
+        let overlay = document.getElementById('customAlertOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'customAlertOverlay';
+            overlay.className = 'custom-alert-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        // Crear alerta
+        const alert = document.createElement('div');
+        alert.className = 'custom-alert';
+        alert.innerHTML = `
+            <div class="custom-alert-header">
+                <h3 class="custom-alert-title">${title}</h3>
+            </div>
+            <div class="custom-alert-body">
+                <p>${message}</p>
+            </div>
+            <div class="custom-alert-footer">
+                ${cancelText ? `<button class="custom-alert-btn custom-alert-btn-secondary" id="customAlertCancel">${cancelText}</button>` : ''}
+                <button class="custom-alert-btn custom-alert-btn-primary" id="customAlertConfirm">${confirmText}</button>
+            </div>
+        `;
+
+        overlay.innerHTML = '';
+        overlay.appendChild(alert);
+
+        // Mostrar alerta
+        setTimeout(() => {
+            overlay.classList.add('active');
+        }, 10);
+
+        // Botón cancelar
+        const cancelBtn = document.getElementById('customAlertCancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.innerHTML = '';
+                }, 300);
+                resolve(false);
+            });
+        }
+
+        // Botón confirmar
+        const confirmBtn = document.getElementById('customAlertConfirm');
+        confirmBtn.addEventListener('click', () => {
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.innerHTML = '';
+            }, 300);
+            resolve(true);
+        });
+
+        // Cerrar al hacer clic fuera
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.innerHTML = '';
+                }, 300);
+                resolve(false);
+            }
+        });
+    });
+}
+
 // Patrones mejorados para verificar si la url es de una red social
 const socialPatterns = {
     tiktok: /(?:https?:\/\/)?(?:www\.)?(?:vm\.|vt\.)?tiktok\.com/i,
@@ -512,7 +583,14 @@ function loadFrequentDownloads() {
 
 // Limpiar historial
 async function clearHistory() {
-    if (!confirm('¿Estás seguro de que deseas limpiar todo el historial?')) {
+    const confirmed = await showCustomAlert(
+        'Limpiar Historial',
+        '¿Estás seguro de que deseas limpiar todo el historial? Esta acción no se puede deshacer.',
+        'Cancelar',
+        'Limpiar'
+    );
+    
+    if (!confirmed) {
         return;
     }
 
@@ -729,9 +807,24 @@ function initAuth() {
         const header = document.querySelector('.header');
 
         if (user) {
-            // Usuario autenticado
-            authBtn.textContent = user.displayName || user.email || 'Cerrar Sesión';
+            // Usuario autenticado - mostrar avatar con inicial
+            const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+            authBtn.textContent = initial;
+            authBtn.className = 'auth-btn user-avatar-btn';
             authBtn.title = `Usuario: ${user.email}`;
+            
+            // Actualizar menú de usuario
+            const userMenu = document.getElementById('userMenu');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            const userEmail = document.getElementById('userEmail');
+            
+            if (userMenu) {
+                if (userAvatar) userAvatar.textContent = initial;
+                if (userName) userName.textContent = user.displayName || 'Usuario';
+                if (userEmail) userEmail.textContent = user.email || '';
+            }
+            
             if (loginScreen) loginScreen.classList.add('hidden');
             // Main content siempre visible (landing page pública)
             if (mainContent) mainContent.classList.remove('hidden');
@@ -740,9 +833,15 @@ function initAuth() {
             // Cargar AdSense solo después de autenticación (cumplir políticas)
             loadAdSense();
         } else {
-            // Usuario no autenticado - landing page pública visible
+            // Usuario no autenticado - mostrar botón de login normal
             authBtn.textContent = 'Iniciar Sesión';
+            authBtn.className = 'auth-btn';
             authBtn.title = '';
+            
+            // Ocultar menú de usuario
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) userMenu.classList.remove('active');
+            
             if (loginScreen) loginScreen.classList.add('hidden'); // Login oculto por defecto
             if (mainContent) mainContent.classList.remove('hidden'); // Contenido siempre visible
             if (header) header.classList.remove('hidden'); // Header siempre visible
@@ -750,20 +849,57 @@ function initAuth() {
     });
 
     // Botón de autenticación en header
-    document.getElementById('authBtn').addEventListener('click', () => {
+    document.getElementById('authBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
         if (appState.currentUser) {
-            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                auth.signOut().catch(error => {
-                    console.error('Error al cerrar sesión:', error);
-                    alert('Error al cerrar sesión');
-                });
+            // Mostrar/ocultar menú de usuario
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.classList.toggle('active');
             }
         } else {
-            // Mostrar modal de login si no está autenticado
+            // Mostrar modal de login si no está autenticado con transición suave
             const loginScreen = document.getElementById('loginScreen');
-            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (loginScreen) {
+                loginScreen.classList.remove('hidden');
+                // Forzar reflow para activar la transición
+                void loginScreen.offsetWidth;
+            }
         }
     });
+
+    // Cerrar menú de usuario al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        const userMenu = document.getElementById('userMenu');
+        const authBtn = document.getElementById('authBtn');
+        if (userMenu && !userMenu.contains(e.target) && !authBtn.contains(e.target)) {
+            userMenu.classList.remove('active');
+        }
+    });
+
+    // Botón de cerrar sesión
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) userMenu.classList.remove('active');
+            
+            // Mostrar alerta personalizada
+            const confirmed = await showCustomAlert(
+                'Cerrar Sesión',
+                '¿Estás seguro de que deseas cerrar sesión?',
+                'Cancelar',
+                'Cerrar Sesión'
+            );
+            
+            if (confirmed) {
+                auth.signOut().catch(error => {
+                    console.error('Error al cerrar sesión:', error);
+                    showCustomAlert('Error', 'Error al cerrar sesión. Por favor, intenta nuevamente.', 'Aceptar');
+                });
+            }
+        });
+    }
 
     // NOTA: El event listener para loginScreenGoogleBtn ya está configurado en setupLoginScreen()
     // No duplicar aquí para evitar popups conflictivos

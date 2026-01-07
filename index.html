@@ -30,7 +30,32 @@
         <div class="logo-container" id="homeLogo">
             <img src="imagenes/Logos/Application%20logo.png" alt="AhaTok" class="app-logo">
         </div>
-        <button class="auth-btn" id="authBtn">Iniciar Sesión</button>
+        <div class="header-right">
+            <div class="theme-toggle-container">
+                <label for="themeSelect" class="theme-label">🌓</label>
+                <select id="themeSelect" class="theme-select">
+                    <option value="dark">Oscuro</option>
+                    <option value="light">Claro</option>
+                </select>
+            </div>
+            <div class="user-menu-container">
+                <button class="auth-btn" id="authBtn">Iniciar Sesión</button>
+                <div class="user-menu hidden" id="userMenu">
+                    <div class="user-menu-header">
+                        <div class="user-avatar" id="userAvatar"></div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName"></div>
+                            <div class="user-email" id="userEmail"></div>
+                        </div>
+                    </div>
+                    <div class="user-menu-divider"></div>
+                    <button class="user-menu-item" id="logoutBtn">
+                        <span class="menu-icon">🚪</span>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </header>
 
     <!-- Drawer Menu -->
@@ -306,13 +331,6 @@
                 <div class="setting-item">
                     <label>Notificaciones</label>
                     <input type="checkbox" id="notificationsToggle">
-                </div>
-                <div class="setting-item">
-                    <label>Tema</label>
-                    <select id="themeSelect">
-                        <option value="dark">Oscuro</option>
-                        <option value="light">Claro</option>
-                    </select>
                 </div>
             </div>
         </div>
