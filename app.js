@@ -503,8 +503,8 @@ function showAuthError(message) {
 // SISTEMA DE NAVEGACIÓN DE VISTAS DE LOGIN
 // ============================================
 
-// Referencias globales a las vistas
-const loginViews = {
+// Referencias globales a las vistas (se inicializarán en setupLoginScreen)
+let loginViews = {
     initial: null,
     email: null,
     verify: null
@@ -523,9 +523,9 @@ function showLoginView(viewName) {
     if (loginViews.initial) loginViews.initial.classList.add('hidden');
     if (loginViews.email) loginViews.email.classList.add('hidden');
     if (loginViews.verify) loginViews.verify.classList.add('hidden');
-    
+
     // Mostrar la vista solicitada
-    switch(viewName) {
+    switch (viewName) {
         case 'initial':
             if (loginViews.initial) loginViews.initial.classList.remove('hidden');
             break;
@@ -547,11 +547,11 @@ function showLoginView(viewName) {
 async function handleSignUp(email, password) {
     try {
         console.log('📝 Creando cuenta nueva...', email);
-        
+
         // Crear usuario
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         console.log('✅ Usuario creado:', userCredential.user.uid);
-        
+
         // Enviar email de verificación
         console.log('📧 Enviando email de verificación...');
         try {
@@ -562,20 +562,20 @@ async function handleSignUp(email, password) {
             // Continuar aunque falle el envío del email (puede ser configuración de Firebase)
             console.warn('⚠️ El usuario fue creado pero el email puede no haberse enviado. Verifica la configuración de Firebase.');
         }
-        
+
         // Guardar credenciales en estado
         loginState.email = email;
         loginState.password = password;
         loginState.isSignUp = true;
-        
+
         // Cerrar sesión temporalmente
         await auth.signOut();
-        
+
         // Mostrar vista de verificación
         const verifyEmailDisplay = document.getElementById('verifyEmailDisplay');
         if (verifyEmailDisplay) verifyEmailDisplay.textContent = email;
         showLoginView('verify');
-        
+
         return { success: true, message: 'Cuenta creada. Revisa tu email para verificar.' };
     } catch (error) {
         console.error('❌ Error en Sign Up:', error);
@@ -587,14 +587,14 @@ async function handleSignUp(email, password) {
 async function handleLogIn(email, password) {
     try {
         console.log('🔐 Intentando login...', email);
-        
+
         // Intentar login
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        
+
         // Verificar si el email está verificado
         if (!userCredential.user.emailVerified) {
             console.log('⚠️ Email no verificado, enviando nuevo enlace...');
-            
+
             // Enviar nuevo enlace de verificación
             try {
                 await userCredential.user.sendEmailVerification();
@@ -602,20 +602,20 @@ async function handleLogIn(email, password) {
             } catch (emailError) {
                 console.error('⚠️ Error al re-enviar email:', emailError);
             }
-            
+
             // Guardar credenciales
             loginState.email = email;
             loginState.password = password;
             loginState.isSignUp = false;
-            
+
             // Cerrar sesión temporalmente
             await auth.signOut();
-            
+
             // Mostrar vista de verificación
             const verifyEmailDisplay = document.getElementById('verifyEmailDisplay');
             if (verifyEmailDisplay) verifyEmailDisplay.textContent = email;
             showLoginView('verify');
-            
+
             return { success: false, needsVerification: true };
         } else {
             // Email verificado, login exitoso
@@ -632,32 +632,32 @@ async function handleLogIn(email, password) {
 async function handleVerifyEmail() {
     const email = loginState.email;
     const password = loginState.password;
-    
+
     if (!email || !password) {
         alert('Error: No se encontraron las credenciales. Por favor, vuelve a iniciar sesión.');
         showLoginView('initial');
         return;
     }
-    
+
     try {
         console.log('🔍 Verificando email...', email);
-        
+
         // Intentar login
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        
+
         if (userCredential.user.emailVerified) {
             console.log('✅ Email verificado, login exitoso');
             // onAuthStateChanged manejará el resto
         } else {
             // Email aún no verificado
-                    try {
-                        await userCredential.user.sendEmailVerification();
-                        console.log('✅ Email de verificación re-enviado');
-                    } catch (emailError) {
-                        console.error('⚠️ Error al re-enviar email:', emailError);
-                    }
-                    await auth.signOut();
-                    alert('Tu email aún no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación. Luego intenta nuevamente.');
+            try {
+                await userCredential.user.sendEmailVerification();
+                console.log('✅ Email de verificación re-enviado');
+            } catch (emailError) {
+                console.error('⚠️ Error al re-enviar email:', emailError);
+            }
+            await auth.signOut();
+            alert('Tu email aún no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación. Luego intenta nuevamente.');
         }
     } catch (error) {
         console.error('❌ Error al verificar:', error);
@@ -673,42 +673,42 @@ async function handleVerifyEmail() {
 async function handleResendVerification() {
     const email = loginState.email;
     const password = loginState.password;
-    
+
     if (!email || !password) {
         alert('Error: No se encontraron las credenciales.');
         return;
     }
-    
+
     try {
         console.log('📧 Re-enviando email de verificación...', email);
-        
+
         // Intentar login para re-enviar
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            try {
+                await userCredential.user.sendEmailVerification();
+                console.log('✅ Email de verificación re-enviado');
+            } catch (emailError) {
+                console.error('⚠️ Error al re-enviar email:', emailError);
+            }
+            await auth.signOut();
+            alert('✅ Email de verificación re-enviado. Por favor, revisa tu correo.');
+        } catch (error) {
+            // Si no existe, crear cuenta
+            if (error.code === 'auth/user-not-found') {
+                const newUser = await auth.createUserWithEmailAndPassword(email, password);
                 try {
-                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    try {
-                        await userCredential.user.sendEmailVerification();
-                        console.log('✅ Email de verificación re-enviado');
-                    } catch (emailError) {
-                        console.error('⚠️ Error al re-enviar email:', emailError);
-                    }
-                    await auth.signOut();
-                    alert('✅ Email de verificación re-enviado. Por favor, revisa tu correo.');
-                } catch (error) {
-                    // Si no existe, crear cuenta
-                    if (error.code === 'auth/user-not-found') {
-                        const newUser = await auth.createUserWithEmailAndPassword(email, password);
-                        try {
-                            await newUser.user.sendEmailVerification();
-                            console.log('✅ Email de verificación enviado');
-                        } catch (emailError) {
-                            console.error('⚠️ Error al enviar email:', emailError);
-                        }
-                        await auth.signOut();
-                        alert('✅ Email de verificación enviado. Por favor, revisa tu correo.');
-                    } else {
-                        throw error;
-                    }
+                    await newUser.user.sendEmailVerification();
+                    console.log('✅ Email de verificación enviado');
+                } catch (emailError) {
+                    console.error('⚠️ Error al enviar email:', emailError);
                 }
+                await auth.signOut();
+                alert('✅ Email de verificación enviado. Por favor, revisa tu correo.');
+            } else {
+                throw error;
+            }
+        }
     } catch (error) {
         console.error('❌ Error al re-enviar:', error);
         alert('Error al re-enviar email: ' + error.message);
@@ -727,6 +727,11 @@ function setupLoginScreen() {
     loginViews.email = document.getElementById('loginScreenEmailForm');
     loginViews.verify = document.getElementById('loginScreenVerifyForm');
     
+    // Asegurar que solo la vista inicial esté visible al inicio
+    if (loginViews.initial) loginViews.initial.classList.remove('hidden');
+    if (loginViews.email) loginViews.email.classList.add('hidden');
+    if (loginViews.verify) loginViews.verify.classList.add('hidden');
+
     // Obtener referencias a elementos
     const loginScreenEmailInput = document.getElementById('loginScreenEmailInput');
     const loginScreenPasswordInput = document.getElementById('loginScreenPasswordInput');
