@@ -549,27 +549,34 @@ async function processFacebook(url) {
             validateStatus: () => true // Aceptar todos los status codes
         });
         
-        const finalUrl = redirectResponse.request.res.responseUrl || redirectResponse.request.res.request.res.responseUrl || url;
+        // Obtener URL final después de redirects
+        const finalUrl = redirectResponse.request?.res?.responseUrl || 
+                        redirectResponse.request?.responseURL || 
+                        redirectResponse.config?.url || 
+                        url;
         console.log(`📍 URL final después de redirects: ${finalUrl}`);
         
-        // Si la URL cambió, intentar procesarla
-        if (finalUrl !== url && finalUrl.includes('facebook.com')) {
-            const html = redirectResponse.data;
-            
-            // Buscar video en la nueva URL
-            const videoPatterns = [
-                /video_src["\']?\s*:\s*["\']([^"\']+)["\']/i,
-                /"video_url":"([^"]+)"/i,
-                /"playable_url":"([^"]+)"/i,
-                /"hd_src":"([^"]+)"/i,
-                /"sd_src":"([^"]+)"/i,
-                /source src=["\']([^"\']+\.mp4[^"\']*)["\']/i
-            ];
-            
-            for (const pattern of videoPatterns) {
-                const match = html.match(pattern);
-                if (match && match[1] && match[1].startsWith('http')) {
-                    const videoUrl = match[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+        const html = redirectResponse.data;
+        
+        // Buscar video en el HTML (incluso si la URL no cambió)
+        const videoPatterns = [
+            /video_src["\']?\s*:\s*["\']([^"\']+)["\']/i,
+            /"video_url":"([^"]+)"/i,
+            /"playable_url":"([^"]+)"/i,
+            /"playable_url_quality_hd":"([^"]+)"/i,
+            /"hd_src":"([^"]+)"/i,
+            /"sd_src":"([^"]+)"/i,
+            /source src=["\']([^"\']+\.mp4[^"\']*)["\']/i,
+            /<video[^>]+src=["\']([^"\']+)["\']/i,
+            /data-video-url=["\']([^"\']+)["\']/i,
+            /"video":\s*\{[^}]*"url":\s*"([^"]+)"/i
+        ];
+        
+        for (const pattern of videoPatterns) {
+            const match = html.match(pattern);
+            if (match && match[1]) {
+                let videoUrl = match[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/').replace(/\\"/g, '"');
+                if (videoUrl.startsWith('http')) {
                     console.log('✅ Video encontrado después de redirect');
                     return {
                         thumbnail: null,
