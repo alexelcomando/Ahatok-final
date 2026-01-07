@@ -13,7 +13,7 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(0px);
 }
 
@@ -22,6 +22,7 @@
     visibility: visible;
     pointer-events: all;
     backdrop-filter: blur(10px);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen.hidden {
@@ -29,6 +30,7 @@
     visibility: hidden;
     pointer-events: none;
     backdrop-filter: blur(0px);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-content {
@@ -90,12 +92,13 @@
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.875rem;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .signup-btn-top:hover {
     border-color: #ffffff;
     background: #1a1a1a;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-body h2 {
@@ -124,12 +127,13 @@
     border-radius: 6px;
     color: #ffffff;
     font-size: 0.9375rem;
-    transition: border-color 0.2s;
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-input:focus {
     outline: none;
     border-color: #ffffff;
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-input::placeholder {
@@ -146,11 +150,12 @@
     font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-primary-btn:hover {
     opacity: 0.9;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-divider {
@@ -192,12 +197,13 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-option-btn:hover {
     border-color: #ffffff;
     background: #1a1a1a;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .option-icon {
@@ -236,11 +242,12 @@
     font-size: 0.875rem;
     margin-bottom: 1rem;
     text-align: left;
-    transition: opacity 0.2s;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-back-btn:hover {
     opacity: 0.8;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-screen-form .form-group {
@@ -285,13 +292,14 @@
     font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 0.5rem;
 }
 
 .login-screen-secondary-btn:hover {
     border-color: #ffffff;
     background: #1a1a1a;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #loginScreenVerifyForm h3 {
