@@ -190,14 +190,22 @@
     <!-- Interstitial Ad Modal -->
     <div class="ad-modal hidden" id="adModal">
         <div class="ad-content">
-            <h3>Anuncio Premium</h3>
-            <div class="ad-placeholder">
-                <p>Aquí se mostraría el anuncio</p>
-                <p class="ad-timer">Cerrando en <span id="adTimer">5</span>s</p>
+            <h3>Anuncio</h3>
+            <div id="adContainer" class="ad-placeholder">
+                <!-- Aquí se mostrará el anuncio de AdSense -->
+                <!-- Reemplaza esto con tu código de AdSense cuando tengas la aprobación -->
+                <p style="color: #999; margin: 2rem 0;">Anuncio (Reemplaza con código de AdSense)</p>
             </div>
-            <button class="close-ad-btn" id="closeAdBtn">Cerrar Anuncio</button>
+            <p class="ad-timer" style="margin-top: 1rem; font-size: 0.875rem; color: #999;">Cerrando en <span id="adTimer">5</span>s</p>
+            <button class="close-ad-btn" id="closeAdBtn">Cerrar</button>
         </div>
     </div>
+    
+    <!-- Google AdSense Script (Descomenta y agrega tu ID cuando tengas la aprobación) -->
+    <!-- 
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-TU_ID_AQUI"
+     crossorigin="anonymous"></script>
+    -->
 
     <!-- Login Modal -->
     <div class="modal hidden" id="loginModal">

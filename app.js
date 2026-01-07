@@ -137,7 +137,40 @@ function showInterstitialAd() {
     return new Promise((resolve) => {
         const adModal = document.getElementById('adModal');
         const adTimer = document.getElementById('adTimer');
+        const adContainer = document.getElementById('adContainer');
         let timeLeft = 5;
+
+        // Cargar anuncio de AdSense si está disponible
+        try {
+            // Si AdSense está cargado, inicializar el anuncio
+            if (typeof (window.adsbygoogle) !== 'undefined') {
+                // Limpiar contenedor
+                adContainer.innerHTML = '';
+                
+                // Crear elemento de anuncio de AdSense
+                const adElement = document.createElement('ins');
+                adElement.className = 'adsbygoogle';
+                adElement.style.display = 'block';
+                adElement.setAttribute('data-ad-client', 'ca-pub-TU_ID_AQUI'); // ⚠️ Reemplaza con tu ID de AdSense
+                adElement.setAttribute('data-ad-slot', 'TU_SLOT_AQUI'); // ⚠️ Reemplaza con tu slot ID
+                adElement.setAttribute('data-ad-format', 'auto');
+                adElement.setAttribute('data-full-width-responsive', 'true');
+                
+                adContainer.appendChild(adElement);
+                
+                // Inicializar el anuncio
+                try {
+                    (window.adsbygoogle = window.adsbygoogle || []).push({});
+                    console.log('✅ Anuncio de AdSense cargado');
+                } catch (e) {
+                    console.warn('⚠️ Error al cargar anuncio de AdSense:', e);
+                }
+            } else {
+                console.log('ℹ️ AdSense no está cargado. Agrega el script en index.html');
+            }
+        } catch (e) {
+            console.warn('⚠️ Error al inicializar AdSense:', e);
+        }
 
         adModal.classList.remove('hidden');
 
