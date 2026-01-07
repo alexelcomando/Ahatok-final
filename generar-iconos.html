@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Iconos AhaTok</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #e91e63;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-section {
+            background: #1e1e1e;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 2px solid #2a2a2a;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 1rem;
+            background: #2a2a2a;
+            border: 2px dashed #e91e63;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .preview-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .icon-preview {
+            background: #1e1e1e;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #2a2a2a;
+        }
+        
+        .icon-preview h3 {
+            color: #e91e63;
+            margin-bottom: 1rem;
+        }
+        
+        canvas {
+            border: 2px solid #2a2a2a;
+            border-radius: 8px;
+            background: white;
+            margin: 0.5rem 0;
+            max-width: 100%;
+        }
+        
+        button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 0.5rem;
+            transition: opacity 0.3s;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .info {
+            background: #2a2a2a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #e91e63;
+        }
+        
+        .actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Generador de Iconos AhaTok</h1>
+        
+        <div class="upload-section">
+            <h2>1. Selecciona el Logo</h2>
+            <div class="file-input-wrapper">
+                <input type="file" id="logoInput" accept="image/*">
+            </div>
+            <div class="info">
+                <p>Selecciona el archivo: <strong>imagenes/Logos/Application logo.png</strong></p>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <div class="icon-preview">
+                <h3>Favicon (32x32)</h3>
+                <canvas id="canvas32" width="32" height="32"></canvas>
+                <button onclick="downloadIcon(32)" id="btn32" disabled>Descargar favicon.ico</button>
+            </div>
+            
+            <div class="icon-preview">
+                <h3>Icon 192x192</h3>
+                <canvas id="canvas192" width="192" height="192"></canvas>
+                <button onclick="downloadIcon(192)" id="btn192" disabled>Descargar icon-192.png</button>
+            </div>
+            
+            <div class="icon-preview">
+                <h3>Icon 512x512</h3>
+                <canvas id="canvas512" width="512" height="512"></canvas>
+                <button onclick="downloadIcon(512)" id="btn512" disabled>Descargar icon-512.png</button>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button onclick="generateAllIcons()" id="generateBtn" disabled>Generar Todos los Iconos</button>
+        </div>
+    </div>
+
+    <script>
+        let logoImage = null;
+        
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        logoImage = img;
+                        generateAllIcons();
+                        document.getElementById('generateBtn').disabled = false;
+                        document.getElementById('btn32').disabled = false;
+                        document.getElementById('btn192').disabled = false;
+                        document.getElementById('btn512').disabled = false;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function generateIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const ctx = canvas.getContext('2d');
+            
+            if (!logoImage) {
+                // Fallback si no hay imagen
+                ctx.fillStyle = '#121212';
+                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = '#e91e63';
+                ctx.font = `bold ${size * 0.4}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('AT', size / 2, size / 2);
+                return;
+            }
+            
+            // Fondo blanco o transparente
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Calcular dimensiones manteniendo aspect ratio
+            const padding = size * 0.1; // 10% de padding
+            const maxWidth = size - (padding * 2);
+            const maxHeight = size - (padding * 2);
+            
+            let drawWidth = logoImage.width;
+            let drawHeight = logoImage.height;
+            
+            // Escalar manteniendo proporción
+            const scale = Math.min(maxWidth / drawWidth, maxHeight / drawHeight);
+            drawWidth *= scale;
+            drawHeight *= scale;
+            
+            // Centrar
+            const x = (size - drawWidth) / 2;
+            const y = (size - drawHeight) / 2;
+            
+            // Dibujar imagen
+            ctx.drawImage(logoImage, x, y, drawWidth, drawHeight);
+        }
+        
+        function generateAllIcons() {
+            if (logoImage) {
+                generateIcon(32);
+                generateIcon(192);
+                generateIcon(512);
+            }
+        }
+        
+        function downloadIcon(size) {
+            const canvas = document.getElementById(`canvas${size}`);
+            const link = document.createElement('a');
+            
+            if (size === 32) {
+                // Para favicon, usar .ico (aunque técnicamente PNG funciona)
+                link.download = 'favicon.ico';
+            } else {
+                link.download = `icon-${size}.png`;
+            }
+            
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Cargar logo por defecto si existe
+        window.onload = function() {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                logoImage = img;
+                generateAllIcons();
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('btn32').disabled = false;
+                document.getElementById('btn192').disabled = false;
+                document.getElementById('btn512').disabled = false;
+            };
+            img.onerror = function() {
+                console.log('Logo no encontrado, usa el selector de archivos');
+            };
+            // Intentar cargar el logo
+            img.src = 'imagenes/Logos/Application%20logo.png';
+        };
+    </script>
+</body>
+</html>
+
