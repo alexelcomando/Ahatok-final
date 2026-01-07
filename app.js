@@ -146,18 +146,18 @@ function showInterstitialAd() {
             if (typeof (window.adsbygoogle) !== 'undefined') {
                 // Limpiar contenedor
                 adContainer.innerHTML = '';
-                
+
                 // Crear elemento de anuncio de AdSense
                 const adElement = document.createElement('ins');
                 adElement.className = 'adsbygoogle';
                 adElement.style.display = 'block';
-                adElement.setAttribute('data-ad-client', 'ca-pub-TU_ID_AQUI'); // ⚠️ Reemplaza con tu ID de AdSense
-                adElement.setAttribute('data-ad-slot', 'TU_SLOT_AQUI'); // ⚠️ Reemplaza con tu slot ID
+                adElement.setAttribute('data-ad-client', 'ca-pub-4101809259492727');
+                adElement.setAttribute('data-ad-slot', 'TU_SLOT_AQUI'); // ⚠️ Reemplaza con tu slot ID cuando crees una unidad de anuncio
                 adElement.setAttribute('data-ad-format', 'auto');
                 adElement.setAttribute('data-full-width-responsive', 'true');
-                
+
                 adContainer.appendChild(adElement);
-                
+
                 // Inicializar el anuncio
                 try {
                     (window.adsbygoogle = window.adsbygoogle || []).push({});
