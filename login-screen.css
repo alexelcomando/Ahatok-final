@@ -32,6 +32,18 @@
     margin-bottom: 3rem;
 }
 
+.login-screen-header .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.login-screen-header .app-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
 .login-screen-logo {
     font-size: 1.5rem;
     font-weight: bold;

@@ -25,9 +25,9 @@ const isFirebaseConfigured = firebaseConfig.apiKey &&
 
 if (isFirebaseConfigured && typeof firebase !== 'undefined') {
     try {
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.firestore();
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
         firebaseInitialized = true;
         console.log('✅ Firebase inicializado correctamente');
     } catch (error) {
@@ -285,7 +285,7 @@ async function downloadFromHistory(url, quality) {
             } catch (error) {
                 console.warn('Error en descarga automática, usando método alternativo:', error);
                 // Fallback: abrir en nueva pestaña si falla la descarga directa
-            window.open(downloadUrl, '_blank');
+                window.open(downloadUrl, '_blank');
             }
         } else {
             alert('No se pudo obtener la URL de descarga. Por favor, intenta nuevamente.');
@@ -383,7 +383,7 @@ async function handleQualityDownload(quality) {
         } catch (error) {
             console.warn('Error en descarga automática, usando método alternativo:', error);
             // Fallback: abrir en nueva pestaña si falla la descarga directa
-        window.open(downloadUrl, '_blank');
+            window.open(downloadUrl, '_blank');
         }
 
         // Guardar en historial
@@ -506,124 +506,7 @@ function showAuthError(message) {
 function setupLoginScreen() {
     console.log('🔧 Configurando login screen (solo Google)...');
 
-    // ========== 1. BOTÓN "Continue with Email" ==========
-    const loginScreenEmailBtn = document.getElementById('loginScreenEmailBtn');
-    if (loginScreenEmailBtn) {
-        loginScreenEmailBtn.addEventListener('click', () => {
-            showLoginView('email');
-        });
-    } else {
-        console.error('❌ loginScreenEmailBtn no encontrado');
-    }
-
-    // ========== 2. BOTÓN "Back" desde formulario de email ==========
-    const loginScreenBackBtn = document.getElementById('loginScreenBackBtn');
-    if (loginScreenBackBtn) {
-        loginScreenBackBtn.addEventListener('click', () => {
-            showLoginView('initial');
-        });
-    }
-
-    // ========== 3. BOTÓN "Back" desde formulario de verificación ==========
-    const loginScreenBackBtn2 = document.getElementById('loginScreenBackBtn2');
-    if (loginScreenBackBtn2) {
-        loginScreenBackBtn2.addEventListener('click', () => {
-            showLoginView('email');
-        });
-    }
-
-    // ========== 4. BOTÓN "Log In" / "Sign Up" (Submit) ==========
-    if (loginScreenSubmitBtn) {
-        loginScreenSubmitBtn.addEventListener('click', async () => {
-            const email = loginScreenEmailInput?.value.trim();
-            const password = loginScreenPasswordInput?.value;
-
-            if (!email || !password) {
-                alert('Por favor, completa todos los campos');
-                return;
-            }
-
-            const isSignUp = loginScreenSubmitBtn.textContent === 'Sign Up';
-
-            try {
-                loginScreenSubmitBtn.disabled = true;
-                loginScreenSubmitBtn.textContent = isSignUp ? 'Creating...' : 'Logging in...';
-
-                if (isSignUp) {
-                    // Sign Up
-                    await handleSignUp(email, password);
-                    alert('✅ Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.');
-                } else {
-                    // Log In
-                    const result = await handleLogIn(email, password);
-                    if (!result.needsVerification) {
-                        // Login exitoso - onAuthStateChanged manejará el resto
-                        console.log('✅ Login exitoso');
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Error:', error);
-
-                if (error.code === 'auth/user-not-found' && !isSignUp) {
-                    // Usuario no existe, ofrecer crear cuenta
-                    if (confirm('Usuario no encontrado. ¿Deseas crear una cuenta nueva?')) {
-                        loginScreenSubmitBtn.textContent = 'Sign Up';
-                        try {
-                            await handleSignUp(email, password);
-                            alert('✅ Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.');
-                        } catch (createError) {
-                            alert('Error al crear cuenta: ' + createError.message);
-                        }
-                    }
-                } else if (error.code === 'auth/wrong-password') {
-                    alert('Contraseña incorrecta. Por favor, verifica tu contraseña.');
-                } else if (error.code === 'auth/email-already-in-use') {
-                    alert('Este email ya está registrado. Por favor, inicia sesión.');
-                } else if (error.code === 'auth/weak-password') {
-                    alert('La contraseña es muy débil. Debe tener al menos 6 caracteres.');
-                } else if (error.code === 'auth/invalid-email') {
-                    alert('El email no es válido. Por favor, verifica el formato.');
-                } else {
-                    alert('Error: ' + error.message);
-                }
-            } finally {
-                loginScreenSubmitBtn.disabled = false;
-                loginScreenSubmitBtn.textContent = isSignUp ? 'Sign Up' : 'Log In';
-            }
-        });
-    }
-
-    // ========== 5. BOTÓN "I've Verified My Email" ==========
-    const loginScreenVerifyBtn = document.getElementById('loginScreenVerifyBtn');
-    if (loginScreenVerifyBtn) {
-        loginScreenVerifyBtn.addEventListener('click', async () => {
-            try {
-                loginScreenVerifyBtn.disabled = true;
-                loginScreenVerifyBtn.textContent = 'Checking...';
-                await handleVerifyEmail();
-            } finally {
-                loginScreenVerifyBtn.disabled = false;
-                loginScreenVerifyBtn.textContent = "I've Verified My Email";
-            }
-        });
-    }
-
-    // ========== 6. BOTÓN "Resend Verification Email" ==========
-    const loginScreenResendBtn = document.getElementById('loginScreenResendBtn');
-    if (loginScreenResendBtn) {
-        loginScreenResendBtn.addEventListener('click', async () => {
-            try {
-                loginScreenResendBtn.disabled = true;
-                loginScreenResendBtn.textContent = 'Sending...';
-                await handleResendVerification();
-            } finally {
-                loginScreenResendBtn.disabled = false;
-                loginScreenResendBtn.textContent = 'Resend Verification Email';
-            }
-        });
-    }
-
-    // ========== 7. BOTÓN "Continue with Google" ==========
+    // ========== BOTÓN "Continue with Google" ==========
     const loginScreenGoogleBtn = document.getElementById('loginScreenGoogleBtn');
     if (loginScreenGoogleBtn) {
         loginScreenGoogleBtn.addEventListener('click', async () => {
@@ -634,7 +517,6 @@ function setupLoginScreen() {
                 }
 
                 loginScreenGoogleBtn.disabled = true;
-                const originalHTML = loginScreenGoogleBtn.innerHTML;
                 loginScreenGoogleBtn.innerHTML = '<span>Connecting...</span>';
 
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -670,57 +552,11 @@ function setupLoginScreen() {
                 }
             }
         });
+    } else {
+        console.error('❌ loginScreenGoogleBtn no encontrado');
     }
 
-    // ========== 7. BOTONES "Sign Up" ==========
-    const showSignup = () => {
-        showLoginView('email');
-        if (loginScreenSubmitBtn) loginScreenSubmitBtn.textContent = 'Sign Up';
-    };
-
-    const loginScreenSignupLink = document.getElementById('loginScreenSignupLink');
-    const loginScreenSignupLink2 = document.getElementById('loginScreenSignupLink2');
-    const signupBtnTop = document.getElementById('signupBtnTop');
-
-    if (loginScreenSignupLink) {
-        loginScreenSignupLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSignup();
-        });
-    }
-
-    if (loginScreenSignupLink2) {
-        loginScreenSignupLink2.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSignup();
-        });
-    }
-
-    if (signupBtnTop) {
-        signupBtnTop.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSignup();
-        });
-    }
-
-    // ========== 9. ENTER KEY en inputs ==========
-    if (loginScreenEmailInput) {
-        loginScreenEmailInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginScreenPasswordInput?.focus();
-            }
-        });
-    }
-
-    if (loginScreenPasswordInput) {
-        loginScreenPasswordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginScreenSubmitBtn?.click();
-            }
-        });
-    }
-
-    console.log('✅ Login screen configurado correctamente');
+    console.log('✅ Login screen configurado correctamente (solo Google)');
 }
 
 // Autenticación Firebase
