@@ -279,14 +279,14 @@ async function downloadFromHistory(url, quality) {
         const videoData = await fetchVideo(url);
         const downloadUrl = videoData[quality] || videoData['720p'] || videoData.audio;
         if (downloadUrl) {
-            // Descarga automática directa
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `${videoData.title || 'video'}_${quality}.${quality === 'audio' ? 'mp3' : 'mp4'}`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Intentar descarga automática usando fetch + blob
+            try {
+                await downloadFile(downloadUrl, `${videoData.title || 'video'}_${quality}.${quality === 'audio' ? 'mp3' : 'mp4'}`);
+            } catch (error) {
+                console.warn('Error en descarga automática, usando método alternativo:', error);
+                // Fallback: abrir en nueva pestaña si falla la descarga directa
+                window.open(downloadUrl, '_blank');
+            }
         } else {
             alert('No se pudo obtener la URL de descarga. Por favor, intenta nuevamente.');
         }
@@ -361,14 +361,14 @@ async function handleQualityDownload(quality) {
     }
 
     if (downloadUrl) {
-        // Descarga automática directa
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${appState.videoData.title || 'video'}_${quality}.${quality === 'audio' ? 'mp3' : 'mp4'}`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Intentar descarga automática usando fetch + blob
+        try {
+            await downloadFile(downloadUrl, `${appState.videoData.title || 'video'}_${quality}.${quality === 'audio' ? 'mp3' : 'mp4'}`);
+        } catch (error) {
+            console.warn('Error en descarga automática, usando método alternativo:', error);
+            // Fallback: abrir en nueva pestaña si falla la descarga directa
+            window.open(downloadUrl, '_blank');
+        }
         
         // Guardar en historial
         await saveToHistory(appState.videoData, quality);
@@ -378,6 +378,49 @@ async function handleQualityDownload(quality) {
         }
     } else {
         alert('No se encontró una URL de descarga para esta calidad.');
+    }
+}
+
+// Función para descargar archivo usando fetch + blob
+async function downloadFile(url, filename) {
+    try {
+        // Mostrar indicador de descarga
+        const loader = document.getElementById('loaderOverlay');
+        loader.classList.remove('hidden');
+        loader.querySelector('p').textContent = 'Descargando...';
+
+        // Fetch del archivo
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Convertir a blob
+        const blob = await response.blob();
+        
+        // Crear URL del blob
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Crear link de descarga
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Limpiar URL del blob
+        window.URL.revokeObjectURL(blobUrl);
+        
+        // Ocultar loader
+        loader.classList.add('hidden');
+        
+        console.log('✅ Descarga completada:', filename);
+    } catch (error) {
+        console.error('❌ Error al descargar:', error);
+        const loader = document.getElementById('loaderOverlay');
+        loader.classList.add('hidden');
+        throw error;
     }
 }
 
