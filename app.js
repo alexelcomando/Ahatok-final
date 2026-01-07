@@ -46,11 +46,11 @@ const appState = {
     history: []
 };
 
-// rernarios para verificar si la url es de una red social
+// Patrones mejorados para verificar si la url es de una red social
 const socialPatterns = {
     tiktok: /(?:https?:\/\/)?(?:www\.)?(?:vm\.|vt\.)?tiktok\.com/i,
-    instagram: /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/(?:p|reel|tv|stories)\/[A-Za-z0-9_-]+/i,
-    facebook: /(?:https?:\/\/)?(?:www\.|m\.)?(?:facebook\.com|fb\.com|fb\.watch)\/(?:.*\/videos\/|share\/p\/|watch\/|.*\/video\.php\?v=)/i
+    instagram: /(?:https?:\/\/)?(?:www\.|m\.)?(?:instagram\.com|instagr\.am)\/(?:p|reel|tv|stories|[\w.]+)\/(?:p|reel|tv|stories)?\/?[A-Za-z0-9_-]+/i,
+    facebook: /(?:https?:\/\/)?(?:www\.|m\.|web\.)?(?:facebook\.com|fb\.com|fb\.watch)\/(?:.*\/videos\/|.*\/video\.php|share\/p\/|watch\/|.*\/posts\/|.*\/permalink\.php|.*\/photo\.php|.*\/reel\/|.*\/watch\/\?v=)/i
 };
 
 // Detectar tipo de red social

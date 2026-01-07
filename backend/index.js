@@ -39,10 +39,17 @@ function cleanUrl(url) {
             urlObj.search = '';
             return urlObj.toString();
         }
-        // Para Facebook, mantener la estructura pero limpiar parámetros
+        // Para Facebook, mantener la estructura pero limpiar parámetros innecesarios
         if (urlObj.hostname.includes('facebook.com') || urlObj.hostname.includes('fb.com') || urlObj.hostname.includes('fb.watch')) {
-            // Para URLs compartidas, mantener la estructura
-            urlObj.search = '';
+            // Mantener parámetros importantes como ?v= o ?story_fbid= pero limpiar tracking
+            const importantParams = ['v', 'story_fbid', 'id'];
+            const newSearch = new URLSearchParams();
+            for (const [key, value] of urlObj.searchParams.entries()) {
+                if (importantParams.includes(key.toLowerCase())) {
+                    newSearch.append(key, value);
+                }
+            }
+            urlObj.search = newSearch.toString();
             return urlObj.toString();
         }
         // Para otras plataformas, remover parámetros de tracking
@@ -53,24 +60,38 @@ function cleanUrl(url) {
     }
 }
 
-// Detectar tipo de red social
+// Detectar tipo de red social (mejorado para reconocer más formatos)
 function detectSocialNetwork(url) {
     // TikTok - incluye dominios acortados (vt.tiktok.com, vm.tiktok.com)
     if (/tiktok\.com|vm\.tiktok|vt\.tiktok/i.test(url)) {
         return 'tiktok';
     }
+    
     // Instagram - incluye instagr.am y diferentes formatos
+    // Formatos: /p/ID, /reel/ID, /tv/ID, /stories/username/ID, username/p/ID, username/reel/ID
     if (/instagram\.com|instagr\.am/i.test(url)) {
-        if (/\/(p|reel|tv|stories)\//i.test(url)) {
+        // Verificar si tiene formato de post, reel, tv o stories
+        if (/\/(p|reel|tv|stories)\//i.test(url) || 
+            /instagram\.com\/[\w.]+\/(p|reel|tv)\//i.test(url) ||
+            /instagram\.com\/[\w.]+\/[\w-]+/i.test(url)) {
             return 'instagram';
         }
     }
-    // Facebook - incluye diferentes formatos: videos, share, watch, fb.com, fb.watch
+    
+    // Facebook - incluye múltiples formatos y dominios
+    // Formatos: /videos/ID, /video.php?v=ID, /share/p/ID, /watch/?v=ID, /posts/ID, 
+    // /permalink.php?story_fbid=ID, /photo.php?v=ID, /reel/ID, /watch/?v=ID
+    // Dominios: facebook.com, fb.com, fb.watch, m.facebook.com, web.facebook.com
     if (/facebook\.com|fb\.com|fb\.watch/i.test(url)) {
-        if (/\/videos\/|\/share\/p\/|\/watch\/|video\.php\?v=/i.test(url)) {
+        // Verificar múltiples formatos de Facebook
+        if (/\/videos\/|\/video\.php|\/share\/p\/|\/watch\/|\/posts\/|\/permalink\.php|\/photo\.php|\/reel\//i.test(url) ||
+            /facebook\.com\/[\w.]+\/videos\/|\/posts\//i.test(url) ||
+            /fb\.watch\/|fb\.com\/watch/i.test(url) ||
+            /\?v=|\?story_fbid=/i.test(url)) {
             return 'facebook';
         }
     }
+    
     return 'unknown';
 }
 
