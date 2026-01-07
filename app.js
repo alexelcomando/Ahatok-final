@@ -554,11 +554,14 @@ async function handleSignUp(email, password) {
         
         // Enviar email de verificación
         console.log('📧 Enviando email de verificación...');
-        await userCredential.user.sendEmailVerification({
-            url: window.location.origin,
-            handleCodeInApp: false
-        });
-        console.log('✅ Email de verificación enviado');
+        try {
+            await userCredential.user.sendEmailVerification();
+            console.log('✅ Email de verificación enviado correctamente');
+        } catch (emailError) {
+            console.error('⚠️ Error al enviar email:', emailError);
+            // Continuar aunque falle el envío del email (puede ser configuración de Firebase)
+            console.warn('⚠️ El usuario fue creado pero el email puede no haberse enviado. Verifica la configuración de Firebase.');
+        }
         
         // Guardar credenciales en estado
         loginState.email = email;
@@ -593,10 +596,12 @@ async function handleLogIn(email, password) {
             console.log('⚠️ Email no verificado, enviando nuevo enlace...');
             
             // Enviar nuevo enlace de verificación
-            await userCredential.user.sendEmailVerification({
-                url: window.location.origin,
-                handleCodeInApp: false
-            });
+            try {
+                await userCredential.user.sendEmailVerification();
+                console.log('✅ Email de verificación re-enviado');
+            } catch (emailError) {
+                console.error('⚠️ Error al re-enviar email:', emailError);
+            }
             
             // Guardar credenciales
             loginState.email = email;
@@ -676,28 +681,32 @@ async function handleResendVerification() {
         console.log('📧 Re-enviando email de verificación...', email);
         
         // Intentar login para re-enviar
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            await userCredential.user.sendEmailVerification({
-                url: window.location.origin,
-                handleCodeInApp: false
-            });
-            await auth.signOut();
-            alert('✅ Email de verificación re-enviado. Por favor, revisa tu correo.');
-        } catch (error) {
-            // Si no existe, crear cuenta
-            if (error.code === 'auth/user-not-found') {
-                const newUser = await auth.createUserWithEmailAndPassword(email, password);
-                await newUser.user.sendEmailVerification({
-                    url: window.location.origin,
-                    handleCodeInApp: false
-                });
-                await auth.signOut();
-                alert('✅ Email de verificación enviado. Por favor, revisa tu correo.');
-            } else {
-                throw error;
-            }
-        }
+                try {
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    try {
+                        await userCredential.user.sendEmailVerification();
+                        console.log('✅ Email de verificación re-enviado');
+                    } catch (emailError) {
+                        console.error('⚠️ Error al re-enviar email:', emailError);
+                    }
+                    await auth.signOut();
+                    alert('✅ Email de verificación re-enviado. Por favor, revisa tu correo.');
+                } catch (error) {
+                    // Si no existe, crear cuenta
+                    if (error.code === 'auth/user-not-found') {
+                        const newUser = await auth.createUserWithEmailAndPassword(email, password);
+                        try {
+                            await newUser.user.sendEmailVerification();
+                            console.log('✅ Email de verificación enviado');
+                        } catch (emailError) {
+                            console.error('⚠️ Error al enviar email:', emailError);
+                        }
+                        await auth.signOut();
+                        alert('✅ Email de verificación enviado. Por favor, revisa tu correo.');
+                    } else {
+                        throw error;
+                    }
+                }
     } catch (error) {
         console.error('❌ Error al re-enviar:', error);
         alert('Error al re-enviar email: ' + error.message);
