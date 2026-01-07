@@ -1,5 +1,5 @@
 // Service Worker para AhaTok
-const CACHE_NAME = 'ahatok-v1';
+const CACHE_NAME = 'ahatok-v2';
 const urlsToCache = [
   './',
   './index.html',
