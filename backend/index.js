@@ -401,40 +401,172 @@ async function processInstagram(url) {
 }
 
 /**
- * Procesar Facebook
+ * Convertir link compartido de Facebook a link directo
+ */
+function convertFacebookShareLink(url) {
+    try {
+        // Si es un link compartido (/share/p/ID), intentar obtener el link real
+        const shareMatch = url.match(/facebook\.com\/share\/p\/([^\/\?]+)/i);
+        if (shareMatch) {
+            const shareId = shareMatch[1];
+            // Intentar diferentes formatos posibles
+            return [
+                `https://www.facebook.com/watch/?v=${shareId}`,
+                `https://www.facebook.com/video.php?v=${shareId}`,
+                url // Mantener el original como fallback
+            ];
+        }
+        return [url];
+    } catch (error) {
+        return [url];
+    }
+}
+
+/**
+ * Procesar Facebook - Múltiples métodos
  */
 async function processFacebook(url) {
+    console.log('🔄 Procesando Facebook...');
+    
+    // Convertir links compartidos a posibles formatos directos
+    const possibleUrls = convertFacebookShareLink(url);
+    
+    // Método 1: Intentar con cada URL posible
+    for (const testUrl of possibleUrls) {
+        try {
+            console.log(`🔄 Intentando con URL: ${testUrl}`);
+            
+            // Intentar obtener el HTML con cookies y headers completos
+            const response = await axios.get(testUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none'
+                },
+                timeout: 25000,
+                maxRedirects: 10,
+                validateStatus: (status) => status < 500 // Aceptar redirects
+            });
+
+            const html = response.data;
+            
+            // Buscar múltiples patrones de video en el HTML
+            const videoPatterns = [
+                /video_src["\']?\s*:\s*["\']([^"\']+)["\']/i,
+                /"video_url":"([^"]+)"/i,
+                /"playable_url":"([^"]+)"/i,
+                /"playable_url_quality_hd":"([^"]+)"/i,
+                /"hd_src":"([^"]+)"/i,
+                /"sd_src":"([^"]+)"/i,
+                /source src=["\']([^"\']+\.mp4[^"\']*)["\']/i,
+                /<video[^>]+src=["\']([^"\']+)["\']/i,
+                /data-video-url=["\']([^"\']+)["\']/i
+            ];
+            
+            let videoUrl = null;
+            for (const pattern of videoPatterns) {
+                const match = html.match(pattern);
+                if (match && match[1]) {
+                    videoUrl = match[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+                    if (videoUrl.startsWith('http')) {
+                        break;
+                    }
+                }
+            }
+            
+            // Buscar thumbnail
+            const thumbnailPatterns = [
+                /thumbnail["\']?\s*:\s*["\']([^"\']+)["\']/i,
+                /"thumbnail":"([^"]+)"/i,
+                /"image":"([^"]+)"/i,
+                /og:image["\']?\s+content=["\']([^"\']+)["\']/i
+            ];
+            
+            let thumbnail = null;
+            for (const pattern of thumbnailPatterns) {
+                const match = html.match(pattern);
+                if (match && match[1]) {
+                    thumbnail = match[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/');
+                    if (thumbnail.startsWith('http')) {
+                        break;
+                    }
+                }
+            }
+            
+            // Buscar título
+            const titlePatterns = [
+                /"name":"([^"]+)"/i,
+                /og:title["\']?\s+content=["\']([^"\']+)["\']/i,
+                /<title>([^<]+)<\/title>/i
+            ];
+            
+            let title = "Video de Facebook";
+            for (const pattern of titlePatterns) {
+                const match = html.match(pattern);
+                if (match && match[1]) {
+                    title = match[1].trim();
+                    break;
+                }
+            }
+            
+            if (videoUrl) {
+                console.log('✅ Video encontrado en Facebook');
+                return {
+                    thumbnail: thumbnail,
+                    "720p": videoUrl,
+                    "1080p": videoUrl,
+                    audio: null,
+                    title: title
+                };
+            }
+        } catch (error) {
+            console.log(`⚠️ Error con URL ${testUrl}:`, error.message);
+            continue; // Intentar siguiente URL
+        }
+    }
+    
+    // Método 2: Intentar con API externa para Facebook
     try {
-        console.log('🔄 Procesando Facebook...');
-        
-        // Facebook es más restrictivo, intentar con scraping
-        const response = await axios.get(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        console.log('🔄 Método 2: API externa para Facebook...');
+        const apiResponse = await axios.get(`https://api.saveig.app/api/ajaxSearch`, {
+            params: {
+                q: url,
+                t: 'media',
+                lang: 'es'
             },
-            timeout: 20000,
-            maxRedirects: 5
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            timeout: 20000
         });
 
-        const html = response.data;
-        const videoMatch = html.match(/video_src["\']?\s*:\s*["\']([^"\']+)["\']/);
-        const thumbnailMatch = html.match(/thumbnail["\']?\s*:\s*["\']([^"\']+)["\']/);
-
-        if (videoMatch) {
-            return {
-                thumbnail: thumbnailMatch ? thumbnailMatch[1] : null,
-                "720p": videoMatch[1],
-                "1080p": videoMatch[1],
-                audio: null,
-                title: "Video de Facebook"
-            };
+        if (apiResponse.data && apiResponse.data.data) {
+            const data = apiResponse.data.data;
+            const videoUrl = data.video || data.videos?.[0]?.url;
+            
+            if (videoUrl) {
+                console.log('✅ Éxito con API externa');
+                return {
+                    thumbnail: data.thumbnail || data.image || null,
+                    "720p": videoUrl,
+                    "1080p": videoUrl,
+                    audio: null,
+                    title: data.title || "Video de Facebook"
+                };
+            }
         }
     } catch (error) {
-        console.log('⚠️ Facebook error:', error.message);
+        console.log('⚠️ API externa error:', error.message);
     }
 
-    throw new Error('No se pudo obtener el video de Facebook. Facebook tiene restricciones estrictas.');
+    throw new Error('No se pudo obtener el video de Facebook. Facebook tiene restricciones estrictas y requiere autenticación en muchos casos.');
 }
 
 /**
