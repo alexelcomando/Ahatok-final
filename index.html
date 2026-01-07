@@ -72,10 +72,6 @@
             <div class="login-screen-body">
                 <h2>Log in to AhaTok</h2>
                 <div class="login-screen-form" id="loginScreenInitialForm">
-                    <button class="login-screen-primary-btn" id="loginScreenEmailBtn">Continue with Email</button>
-                    <div class="login-screen-divider">
-                        <span>or</span>
-                    </div>
                     <div class="login-screen-options">
                         <button class="login-screen-option-btn" id="loginScreenGoogleBtn">
                             <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
@@ -87,36 +83,6 @@
                             Continue with Google
                         </button>
                     </div>
-                    <p class="login-screen-footer">
-                        Don't have an account? <a href="#" id="loginScreenSignupLink">Sign Up</a>
-                    </p>
-                </div>
-                
-                <!-- Formulario de Email/Password -->
-                <div class="login-screen-form hidden" id="loginScreenEmailForm">
-                    <button class="login-screen-back-btn" id="loginScreenBackBtn">← Back</button>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="loginScreenEmailInput" placeholder="tu@email.com" autocomplete="email" class="login-screen-input">
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="loginScreenPasswordInput" placeholder="••••••••" autocomplete="current-password" class="login-screen-input">
-                    </div>
-                    <button class="login-screen-primary-btn" id="loginScreenSubmitBtn">Log In</button>
-                    <p class="login-screen-footer">
-                        Don't have an account? <a href="#" id="loginScreenSignupLink2">Sign Up</a>
-                    </p>
-                </div>
-                
-                <!-- Formulario de Verificación -->
-                <div class="login-screen-form hidden" id="loginScreenVerifyForm">
-                    <h3>Verify Your Email</h3>
-                    <p class="verify-info">We sent a verification link to <strong id="verifyEmailDisplay"></strong></p>
-                    <p class="verify-info" style="font-size: 0.8rem; margin-top: 1rem;">Please check your email and click the verification link. Then click the button below to continue.</p>
-                    <button class="login-screen-primary-btn" id="loginScreenVerifyBtn">I've Verified My Email</button>
-                    <button class="login-screen-secondary-btn" id="loginScreenResendBtn">Resend Verification Email</button>
-                    <button class="login-screen-back-btn" id="loginScreenBackBtn2">← Back</button>
                 </div>
             </div>
         </div>
