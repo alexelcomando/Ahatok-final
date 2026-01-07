@@ -25,9 +25,9 @@ const isFirebaseConfigured = firebaseConfig.apiKey &&
 
 if (isFirebaseConfigured && typeof firebase !== 'undefined') {
     try {
-        firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
         firebaseInitialized = true;
         console.log('✅ Firebase inicializado correctamente');
     } catch (error) {
@@ -285,7 +285,7 @@ async function downloadFromHistory(url, quality) {
             } catch (error) {
                 console.warn('Error en descarga automática, usando método alternativo:', error);
                 // Fallback: abrir en nueva pestaña si falla la descarga directa
-                window.open(downloadUrl, '_blank');
+            window.open(downloadUrl, '_blank');
             }
         } else {
             alert('No se pudo obtener la URL de descarga. Por favor, intenta nuevamente.');
@@ -383,7 +383,7 @@ async function handleQualityDownload(quality) {
         } catch (error) {
             console.warn('Error en descarga automática, usando método alternativo:', error);
             // Fallback: abrir en nueva pestaña si falla la descarga directa
-            window.open(downloadUrl, '_blank');
+        window.open(downloadUrl, '_blank');
         }
 
         // Guardar en historial
@@ -501,128 +501,167 @@ function showAuthError(message) {
 
 // Configurar pantalla de login inicial
 function setupLoginScreen() {
-    // Mostrar formulario de email cuando se hace clic en "Continue with Email"
-    const loginScreenEmailBtn = document.getElementById('loginScreenEmailBtn');
+    console.log('🔧 Configurando login screen...');
+    
+    // Obtener referencias a todos los elementos
     const loginScreenInitialForm = document.getElementById('loginScreenInitialForm');
     const loginScreenEmailForm = document.getElementById('loginScreenEmailForm');
+    const loginScreenVerifyForm = document.getElementById('loginScreenVerifyForm');
+    const loginScreenEmailInput = document.getElementById('loginScreenEmailInput');
+    const loginScreenPasswordInput = document.getElementById('loginScreenPasswordInput');
+    const verifyEmailDisplay = document.getElementById('verifyEmailDisplay');
     
+    // ========== 1. BOTÓN "Continue with Email" ==========
+    const loginScreenEmailBtn = document.getElementById('loginScreenEmailBtn');
     if (loginScreenEmailBtn) {
         loginScreenEmailBtn.addEventListener('click', () => {
+            console.log('📧 Continue with Email clicked');
             if (loginScreenInitialForm) loginScreenInitialForm.classList.add('hidden');
             if (loginScreenEmailForm) loginScreenEmailForm.classList.remove('hidden');
         });
+    } else {
+        console.error('❌ loginScreenEmailBtn no encontrado');
     }
-    
-    // Botón Back desde formulario de email
+
+    // ========== 2. BOTÓN "Back" desde formulario de email ==========
     const loginScreenBackBtn = document.getElementById('loginScreenBackBtn');
     if (loginScreenBackBtn) {
         loginScreenBackBtn.addEventListener('click', () => {
+            console.log('⬅️ Back desde email form');
             if (loginScreenEmailForm) loginScreenEmailForm.classList.add('hidden');
             if (loginScreenInitialForm) loginScreenInitialForm.classList.remove('hidden');
         });
     }
-    
-    // Botón Back desde formulario de verificación
+
+    // ========== 3. BOTÓN "Back" desde formulario de verificación ==========
     const loginScreenBackBtn2 = document.getElementById('loginScreenBackBtn2');
     if (loginScreenBackBtn2) {
         loginScreenBackBtn2.addEventListener('click', () => {
-            const loginScreenVerifyForm = document.getElementById('loginScreenVerifyForm');
+            console.log('⬅️ Back desde verify form');
             if (loginScreenVerifyForm) loginScreenVerifyForm.classList.add('hidden');
             if (loginScreenEmailForm) loginScreenEmailForm.classList.remove('hidden');
         });
     }
-    
-    // Submit del formulario de email (enviar código de verificación)
+
+    // ========== 4. BOTÓN "Log In" / "Sign Up" (Submit) ==========
     const loginScreenSubmitBtn = document.getElementById('loginScreenSubmitBtn');
     if (loginScreenSubmitBtn) {
         loginScreenSubmitBtn.addEventListener('click', async () => {
-            const email = document.getElementById('loginScreenEmailInput').value.trim();
-            const password = document.getElementById('loginScreenPasswordInput').value;
-            
+            const email = loginScreenEmailInput?.value.trim();
+            const password = loginScreenPasswordInput?.value;
+
             if (!email || !password) {
                 alert('Por favor, completa todos los campos');
                 return;
             }
-            
+
+            const isSignUp = loginScreenSubmitBtn.textContent === 'Sign Up';
+            console.log(isSignUp ? '📝 Sign Up' : '🔐 Log In', email);
+
             try {
                 loginScreenSubmitBtn.disabled = true;
-                loginScreenSubmitBtn.textContent = 'Sending code...';
+                loginScreenSubmitBtn.textContent = isSignUp ? 'Creating...' : 'Logging in...';
+
+                let userCredential;
                 
-                // Intentar login primero para verificar credenciales
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                
-                // Si el usuario no está verificado, enviar código
-                if (!userCredential.user.emailVerified) {
+                if (isSignUp) {
+                    // Crear nueva cuenta
+                    userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     await userCredential.user.sendEmailVerification();
-                    // Cerrar sesión temporalmente
                     await auth.signOut();
                     
                     // Mostrar formulario de verificación
-                    document.getElementById('verifyEmailDisplay').textContent = email;
+                    if (verifyEmailDisplay) verifyEmailDisplay.textContent = email;
                     if (loginScreenEmailForm) loginScreenEmailForm.classList.add('hidden');
-                    document.getElementById('loginScreenVerifyForm').classList.remove('hidden');
+                    if (loginScreenVerifyForm) loginScreenVerifyForm.classList.remove('hidden');
                 } else {
-                    // Usuario ya verificado, login exitoso
-                    // onAuthStateChanged manejará el resto
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                if (error.code === 'auth/user-not-found') {
-                    // Usuario no existe, crear cuenta y enviar código
-                    try {
-                        const newUser = await auth.createUserWithEmailAndPassword(email, password);
-                        await newUser.user.sendEmailVerification();
+                    // Intentar login
+                    userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    
+                    if (!userCredential.user.emailVerified) {
+                        // Email no verificado, enviar enlace
+                        await userCredential.user.sendEmailVerification();
                         await auth.signOut();
                         
                         // Mostrar formulario de verificación
-                        document.getElementById('verifyEmailDisplay').textContent = email;
+                        if (verifyEmailDisplay) verifyEmailDisplay.textContent = email;
                         if (loginScreenEmailForm) loginScreenEmailForm.classList.add('hidden');
-                        document.getElementById('loginScreenVerifyForm').classList.remove('hidden');
-                    } catch (createError) {
-                        alert('Error: ' + createError.message);
+                        if (loginScreenVerifyForm) loginScreenVerifyForm.classList.remove('hidden');
+                    } else {
+                        // Email verificado, login exitoso - onAuthStateChanged manejará el resto
+                        console.log('✅ Login exitoso');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                
+                if (error.code === 'auth/user-not-found' && !isSignUp) {
+                    // Usuario no existe, ofrecer crear cuenta
+                    if (confirm('Usuario no encontrado. ¿Deseas crear una cuenta nueva?')) {
+                        loginScreenSubmitBtn.textContent = 'Sign Up';
+                        // Intentar crear cuenta
+                        try {
+                            const newUser = await auth.createUserWithEmailAndPassword(email, password);
+                            await newUser.user.sendEmailVerification();
+                            await auth.signOut();
+                            
+                            if (verifyEmailDisplay) verifyEmailDisplay.textContent = email;
+                            if (loginScreenEmailForm) loginScreenEmailForm.classList.add('hidden');
+                            if (loginScreenVerifyForm) loginScreenVerifyForm.classList.remove('hidden');
+                        } catch (createError) {
+                            alert('Error al crear cuenta: ' + createError.message);
+                        }
                     }
                 } else if (error.code === 'auth/wrong-password') {
                     alert('Contraseña incorrecta. Por favor, verifica tu contraseña.');
+                } else if (error.code === 'auth/email-already-in-use') {
+                    alert('Este email ya está registrado. Por favor, inicia sesión.');
                 } else {
                     alert('Error: ' + error.message);
                 }
             } finally {
                 loginScreenSubmitBtn.disabled = false;
-                loginScreenSubmitBtn.textContent = 'Log In';
+                loginScreenSubmitBtn.textContent = isSignUp ? 'Sign Up' : 'Log In';
             }
         });
     }
-    
-    // Verificar email (Firebase usa enlaces, no códigos)
+
+    // ========== 5. BOTÓN "I've Verified My Email" ==========
     const loginScreenVerifyBtn = document.getElementById('loginScreenVerifyBtn');
     if (loginScreenVerifyBtn) {
         loginScreenVerifyBtn.addEventListener('click', async () => {
-            const email = document.getElementById('loginScreenEmailInput').value.trim();
-            const password = document.getElementById('loginScreenPasswordInput').value;
-            
+            const email = loginScreenEmailInput?.value.trim();
+            const password = loginScreenPasswordInput?.value;
+
+            if (!email || !password) {
+                alert('Error: No se encontraron las credenciales. Por favor, vuelve a iniciar sesión.');
+                if (loginScreenVerifyForm) loginScreenVerifyForm.classList.add('hidden');
+                if (loginScreenInitialForm) loginScreenInitialForm.classList.remove('hidden');
+                return;
+            }
+
             try {
                 loginScreenVerifyBtn.disabled = true;
                 loginScreenVerifyBtn.textContent = 'Checking...';
-                
+
                 // Intentar login para verificar si el email ya está verificado
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                
+
                 if (userCredential.user.emailVerified) {
-                    // Email verificado, login exitoso
-                    // onAuthStateChanged manejará el resto
+                    // Email verificado, login exitoso - onAuthStateChanged manejará el resto
                     console.log('✅ Email verificado, login exitoso');
                 } else {
-                    // Email no verificado, re-enviar enlace
+                    // Email aún no verificado
                     await userCredential.user.sendEmailVerification();
                     await auth.signOut();
-                    alert('Por favor, verifica tu email haciendo clic en el enlace que enviamos a tu correo. Luego intenta iniciar sesión nuevamente.');
+                    alert('Tu email aún no ha sido verificado. Por favor, revisa tu correo y haz clic en el enlace de verificación. Luego intenta nuevamente.');
                     
                     // Volver al formulario de login
-                    document.getElementById('loginScreenVerifyForm').classList.add('hidden');
-                    document.getElementById('loginScreenEmailForm').classList.remove('hidden');
+                    if (loginScreenVerifyForm) loginScreenVerifyForm.classList.add('hidden');
+                    if (loginScreenEmailForm) loginScreenEmailForm.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('❌ Error:', error);
                 if (error.code === 'auth/wrong-password') {
                     alert('Contraseña incorrecta. Por favor, verifica tu contraseña.');
                 } else {
@@ -630,45 +669,54 @@ function setupLoginScreen() {
                 }
             } finally {
                 loginScreenVerifyBtn.disabled = false;
-                loginScreenVerifyBtn.textContent = 'Verify';
-            }
-        });
-    }
-    
-    // Re-enviar código
-    const loginScreenResendBtn = document.getElementById('loginScreenResendBtn');
-    if (loginScreenResendBtn) {
-        loginScreenResendBtn.addEventListener('click', async () => {
-            const email = document.getElementById('loginScreenEmailInput').value.trim();
-            const password = document.getElementById('loginScreenPasswordInput').value;
-            
-            try {
-                loginScreenResendBtn.disabled = true;
-                loginScreenResendBtn.textContent = 'Sending...';
-                
-                // Crear usuario temporal o hacer login para re-enviar
-                try {
-                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    await userCredential.user.sendEmailVerification();
-                    await auth.signOut();
-                    alert('Código de verificación re-enviado. Por favor, revisa tu email.');
-                } catch (error) {
-                    // Si no existe, crear cuenta
-                    const newUser = await auth.createUserWithEmailAndPassword(email, password);
-                    await newUser.user.sendEmailVerification();
-                    await auth.signOut();
-                    alert('Código de verificación enviado. Por favor, revisa tu email.');
-                }
-            } catch (error) {
-                alert('Error al re-enviar código: ' + error.message);
-            } finally {
-                loginScreenResendBtn.disabled = false;
-                loginScreenResendBtn.textContent = 'Resend Code';
+                loginScreenVerifyBtn.textContent = "I've Verified My Email";
             }
         });
     }
 
-    // Login con Google desde login screen
+    // ========== 6. BOTÓN "Resend Verification Email" ==========
+    const loginScreenResendBtn = document.getElementById('loginScreenResendBtn');
+    if (loginScreenResendBtn) {
+        loginScreenResendBtn.addEventListener('click', async () => {
+            const email = loginScreenEmailInput?.value.trim();
+            const password = loginScreenPasswordInput?.value;
+
+            if (!email || !password) {
+                alert('Error: No se encontraron las credenciales.');
+                return;
+            }
+
+            try {
+                loginScreenResendBtn.disabled = true;
+                loginScreenResendBtn.textContent = 'Sending...';
+
+                // Intentar login para re-enviar verificación
+                try {
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    await userCredential.user.sendEmailVerification();
+                    await auth.signOut();
+                    alert('Email de verificación re-enviado. Por favor, revisa tu correo.');
+                } catch (error) {
+                    // Si no existe, crear cuenta
+                    if (error.code === 'auth/user-not-found') {
+                        const newUser = await auth.createUserWithEmailAndPassword(email, password);
+                        await newUser.user.sendEmailVerification();
+                        await auth.signOut();
+                        alert('Email de verificación enviado. Por favor, revisa tu correo.');
+                    } else {
+                        throw error;
+                    }
+                }
+            } catch (error) {
+                alert('Error al re-enviar email: ' + error.message);
+            } finally {
+                loginScreenResendBtn.disabled = false;
+                loginScreenResendBtn.textContent = 'Resend Verification Email';
+            }
+        });
+    }
+
+    // ========== 7. BOTÓN "Continue with Google" ==========
     const loginScreenGoogleBtn = document.getElementById('loginScreenGoogleBtn');
     if (loginScreenGoogleBtn) {
         loginScreenGoogleBtn.addEventListener('click', async () => {
@@ -677,11 +725,18 @@ function setupLoginScreen() {
                     alert('Firebase no está configurado. Por favor, verifica la configuración.');
                     return;
                 }
+
+                loginScreenGoogleBtn.disabled = true;
+                const originalHTML = loginScreenGoogleBtn.innerHTML;
+                loginScreenGoogleBtn.innerHTML = '<span>Connecting...</span>';
+
                 const provider = new firebase.auth.GoogleAuthProvider();
                 await auth.signInWithPopup(provider);
-                // El login screen se ocultará automáticamente por onAuthStateChanged
+                
+                // Login exitoso - onAuthStateChanged manejará el resto
+                console.log('✅ Login con Google exitoso');
             } catch (error) {
-                console.error('Error en login con Google:', error);
+                console.error('❌ Error en login con Google:', error);
                 let errorMessage = 'Error al iniciar sesión con Google. ';
 
                 if (error.code === 'auth/popup-closed-by-user') {
@@ -693,33 +748,47 @@ function setupLoginScreen() {
                 }
 
                 alert(errorMessage);
+            } finally {
+                if (loginScreenGoogleBtn) {
+                    loginScreenGoogleBtn.disabled = false;
+                    loginScreenGoogleBtn.innerHTML = `
+                        <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    `;
+                }
             }
         });
     }
 
-    // Sign up desde login screen
-    const loginScreenSignupLink = document.getElementById('loginScreenSignupLink');
-    const signupBtnTop = document.getElementById('signupBtnTop');
-
+    // ========== 8. BOTONES "Sign Up" ==========
     const showSignup = () => {
-        const loginScreen = document.getElementById('loginScreen');
-        const loginModal = document.getElementById('loginModal');
-        if (loginScreen) loginScreen.classList.add('hidden');
-        if (loginModal) {
-            loginModal.classList.remove('hidden');
-            // Ocultar opciones y mostrar formulario de registro directamente
-            const loginOptions = document.querySelector('.login-options');
-            const emailLoginForm = document.getElementById('emailLoginForm');
-            const emailRegisterForm = document.getElementById('emailRegisterForm');
-
-            if (loginOptions) loginOptions.classList.add('hidden');
-            if (emailLoginForm) emailLoginForm.classList.add('hidden');
-            if (emailRegisterForm) emailRegisterForm.classList.remove('hidden');
+        console.log('📝 Mostrando formulario de registro');
+        if (loginScreenInitialForm) loginScreenInitialForm.classList.add('hidden');
+        if (loginScreenEmailForm) {
+            loginScreenEmailForm.classList.remove('hidden');
+            // Cambiar texto del botón a "Sign Up"
+            if (loginScreenSubmitBtn) loginScreenSubmitBtn.textContent = 'Sign Up';
         }
     };
 
+    const loginScreenSignupLink = document.getElementById('loginScreenSignupLink');
+    const loginScreenSignupLink2 = document.getElementById('loginScreenSignupLink2');
+    const signupBtnTop = document.getElementById('signupBtnTop');
+
     if (loginScreenSignupLink) {
         loginScreenSignupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSignup();
+        });
+    }
+
+    if (loginScreenSignupLink2) {
+        loginScreenSignupLink2.addEventListener('click', (e) => {
             e.preventDefault();
             showSignup();
         });
@@ -732,14 +801,24 @@ function setupLoginScreen() {
         });
     }
 
-    // Enter key en input de email
-    if (loginScreenEmail) {
-        loginScreenEmail.addEventListener('keypress', (e) => {
+    // ========== 9. ENTER KEY en inputs ==========
+    if (loginScreenEmailInput) {
+        loginScreenEmailInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                loginScreenEmailBtn.click();
+                loginScreenPasswordInput?.focus();
             }
         });
     }
+
+    if (loginScreenPasswordInput) {
+        loginScreenPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginScreenSubmitBtn?.click();
+            }
+        });
+    }
+
+    console.log('✅ Login screen configurado correctamente');
 }
 
 // Autenticación Firebase
@@ -1048,6 +1127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar datos iniciales
     loadFrequentDownloads();
     initAuth();
+    setupLoginScreen(); // ¡IMPORTANTE! Configurar login screen
 
     // Manejar rutas hash
     window.addEventListener('hashchange', () => {
