@@ -714,15 +714,16 @@ function setupLoginScreen() {
                         alert(errorMessage);
                     }
                 }
-            }
+            } catch (error) {
+                console.error('❌ Error en login con Google (catch externo):', error);
             } finally {
-            // signInWithRedirect causa redirección, pero si hay error en popup fallback:
-            // Resetear botón solo si aún no está autenticado
-            setTimeout(() => {
-                console.log('⏱️ Verificando estado en finally después de 500ms:', auth.currentUser?.email || 'null');
-                if (newBtn && !auth.currentUser) {
-                    console.log('🔧 Reseteando botón porque usuario sigue siendo null');
-                    newBtn.disabled = false;
+                // signInWithRedirect causa redirección, pero si hay error en popup fallback:
+                // Resetear botón solo si aún no está autenticado
+                setTimeout(() => {
+                    console.log('⏱️ Verificando estado en finally después de 500ms:', auth.currentUser?.email || 'null');
+                    if (newBtn && !auth.currentUser) {
+                        console.log('🔧 Reseteando botón porque usuario sigue siendo null');
+                        newBtn.disabled = false;
                     newBtn.innerHTML = `
                             <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
