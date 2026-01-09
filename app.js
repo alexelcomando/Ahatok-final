@@ -889,23 +889,30 @@ function initAuth() {
         e.stopPropagation();
         // Verificar estado actual de Firebase en lugar de appState
         const currentUser = auth ? auth.currentUser : null;
-        console.log('Estado actual:', currentUser); // Temporal para debug
+        console.log('🔘 Click en authBtn - Estado actual:', currentUser?.email || 'null');
 
         if (currentUser) {
+            console.log('👤 Usuario autenticado, mostrando menú de usuario');
             // Mostrar/ocultar menú de usuario
             const userMenu = document.getElementById('userMenu');
             if (userMenu) {
                 // Remover hidden y toggle active
                 userMenu.classList.remove('hidden');
                 userMenu.classList.toggle('active');
+                console.log('✅ Menú de usuario toggled');
             }
         } else {
+            console.log('❌ Usuario NO autenticado, mostrando login screen');
             // Mostrar modal de login si no está autenticado
             const loginScreen = document.getElementById('loginScreen');
+            console.log('loginScreen element:', loginScreen);
             if (loginScreen) {
                 loginScreen.classList.remove('hidden');
+                console.log('✅ loginScreen.hidden removido');
                 // Forzar reflow para activar la transición
                 void loginScreen.offsetWidth;
+            } else {
+                console.error('❌ loginScreen NO encontrado');
             }
         }
     });
