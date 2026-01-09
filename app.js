@@ -28,6 +28,19 @@ if (isFirebaseConfigured && typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
         db = firebase.firestore();
+
+        // ⚠️ IMPORTANTE: Configurar persistencia de sesión
+        // Usar LOCAL para que la sesión persista incluso después de cerrar el navegador
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .catch((error) => {
+                console.warn('⚠️ No se pudo configurar persistencia LOCAL:', error.message);
+                // Fallback a SESSION
+                return auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+            })
+            .catch((error) => {
+                console.warn('⚠️ No se pudo configurar persistencia:', error.message);
+            });
+
         firebaseInitialized = true;
         console.log('✅ Firebase inicializado correctamente');
     } catch (error) {
@@ -677,49 +690,40 @@ function setupLoginScreen() {
                 const provider = new firebase.auth.GoogleAuthProvider();
 
                 try {
-                    // Intentar con popup primero
-                    const result = await auth.signInWithPopup(provider);
-                    console.log('✅ Login con Google exitoso (popup)', result.user.email);
-                    console.log('Usuario actual después del popup:', auth.currentUser?.email || 'null');
-                } catch (popupError) {
-                    // Si popup falla, intentar con redirect (útil en mobile/webview)
-                    if (popupError.code === 'auth/popup-blocked' ||
-                        popupError.code === 'auth/popup-closed-by-user' ||
-                        popupError.code === 'auth/operation-not-supported-in-this-environment') {
-                        console.log('ℹ️ Usando fallback a redirect...');
-                        await auth.signInWithRedirect(provider);
-                        // signInWithRedirect no retorna, esperar un poco
-                        return;
+                    // Usar signInWithRedirect como método principal
+                    // Es más confiable que popup en navegadores con restricciones de CORS
+                    console.log('🔄 Intentando login con redirect...');
+                    await auth.signInWithRedirect(provider);
+                    // signInWithRedirect redirige, pero con getRedirectResult manejamos la respuesta
+                } catch (error) {
+                    console.error('❌ Error en signInWithRedirect:', error);
+                    // Si redirect falla, intentar popup como fallback
+                    try {
+                        console.log('ℹ️ Fallback a popup...');
+                        const result = await auth.signInWithPopup(provider);
+                        console.log('✅ Login con Google exitoso (popup)', result.user.email);
+                        console.log('Usuario actual después del popup:', auth.currentUser?.email || 'null');
+                    } catch (popupError) {
+                        console.error('❌ Error en popup fallback:', popupError);
+                        let errorMessage = 'Error al iniciar sesión. ';
+                        if (popupError.code === 'auth/popup-blocked') {
+                            errorMessage += 'El navegador bloqueó la ventana emergente.';
+                        } else {
+                            errorMessage += popupError.message || 'Intenta nuevamente.';
+                        }
+                        alert(errorMessage);
                     }
-                    // Si es otro error, relanzar
-                    throw popupError;
                 }
-            } catch (error) {
-                console.error('❌ Error en login con Google:', error);
-
-                // No mostrar alerta para errores de popup cancelado (es normal si el usuario cierra)
-                if (error.code === 'auth/cancelled-popup-request') {
-                    console.log('ℹ️ Popup cancelado por otro popup o usuario');
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    console.log('ℹ️ El usuario cerró la ventana de popup');
-                } else {
-                    let errorMessage = 'Error al iniciar sesión con Google. ';
-
-                    if (error.code === 'auth/popup-blocked') {
-                        errorMessage += 'El navegador bloqueó la ventana. Por favor, permite ventanas emergentes en la configuración del navegador.';
-                    } else {
-                        errorMessage += error.message || 'Intenta nuevamente.';
-                    }
-                    alert(errorMessage);
-                }
+            }
             } finally {
-                // Resetear botón solo si aún no está autenticado (esperar un poco por si es async)
-                setTimeout(() => {
-                    console.log('⏱️ Verificando estado en finally después de 500ms:', auth.currentUser?.email || 'null');
-                    if (newBtn && !auth.currentUser) {
-                        console.log('🔧 Reseteando botón porque usuario sigue siendo null');
-                        newBtn.disabled = false;
-                        newBtn.innerHTML = `
+            // signInWithRedirect causa redirección, pero si hay error en popup fallback:
+            // Resetear botón solo si aún no está autenticado
+            setTimeout(() => {
+                console.log('⏱️ Verificando estado en finally después de 500ms:', auth.currentUser?.email || 'null');
+                if (newBtn && !auth.currentUser) {
+                    console.log('🔧 Reseteando botón porque usuario sigue siendo null');
+                    newBtn.disabled = false;
+                    newBtn.innerHTML = `
                             <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -728,15 +732,15 @@ function setupLoginScreen() {
                             </svg>
                             Continuar con Google
                         `;
-                    }
-                }, 500);
-            }
-        });
-    } else {
-        console.error('❌ loginScreenGoogleBtn no encontrado');
-    }
+                }
+            }, 500);
+        }
+    });
+} else {
+    console.error('❌ loginScreenGoogleBtn no encontrado');
+}
 
-    console.log('✅ Login screen configurado correctamente (solo Google)');
+console.log('✅ Login screen configurado correctamente (solo Google)');
 }
 
 // Cargar AdSense solo después de autenticación (cumplir políticas)
