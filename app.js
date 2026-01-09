@@ -675,14 +675,15 @@ function setupLoginScreen() {
                 newBtn.innerHTML = '<span>Conectando...</span>';
 
                 const provider = new firebase.auth.GoogleAuthProvider();
-                
+
                 try {
                     // Intentar con popup primero
-                    await auth.signInWithPopup(provider);
-                    console.log('✅ Login con Google exitoso (popup)');
+                    const result = await auth.signInWithPopup(provider);
+                    console.log('✅ Login con Google exitoso (popup)', result.user.email);
+                    console.log('Usuario actual después del popup:', auth.currentUser?.email || 'null');
                 } catch (popupError) {
                     // Si popup falla, intentar con redirect (útil en mobile/webview)
-                    if (popupError.code === 'auth/popup-blocked' || 
+                    if (popupError.code === 'auth/popup-blocked' ||
                         popupError.code === 'auth/popup-closed-by-user' ||
                         popupError.code === 'auth/operation-not-supported-in-this-environment') {
                         console.log('ℹ️ Usando fallback a redirect...');
@@ -703,7 +704,7 @@ function setupLoginScreen() {
                     console.log('ℹ️ El usuario cerró la ventana de popup');
                 } else {
                     let errorMessage = 'Error al iniciar sesión con Google. ';
-                    
+
                     if (error.code === 'auth/popup-blocked') {
                         errorMessage += 'El navegador bloqueó la ventana. Por favor, permite ventanas emergentes en la configuración del navegador.';
                     } else {
@@ -714,7 +715,9 @@ function setupLoginScreen() {
             } finally {
                 // Resetear botón solo si aún no está autenticado (esperar un poco por si es async)
                 setTimeout(() => {
+                    console.log('⏱️ Verificando estado en finally después de 500ms:', auth.currentUser?.email || 'null');
                     if (newBtn && !auth.currentUser) {
+                        console.log('🔧 Reseteando botón porque usuario sigue siendo null');
                         newBtn.disabled = false;
                         newBtn.innerHTML = `
                             <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
@@ -827,6 +830,7 @@ function initAuth() {
 
     // Observar cambios en el estado de autenticación
     auth.onAuthStateChanged((user) => {
+        console.log('🔍 onAuthStateChanged disparado:', user ? `Email: ${user.email}` : 'sin usuario');
         appState.currentUser = user;
         const authBtn = document.getElementById('authBtn');
         const loginScreen = document.getElementById('loginScreen');
@@ -834,7 +838,7 @@ function initAuth() {
         const header = document.querySelector('.header');
 
         if (user) {
-            // Usuario autenticado - mostrar avatar con inicial
+            console.log('✅ Usuario autenticado:', user.email);
             const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
             authBtn.textContent = initial;
             authBtn.className = 'auth-btn user-avatar-btn';
@@ -861,6 +865,7 @@ function initAuth() {
             loadAdSense();
         } else {
             // Usuario no autenticado - mostrar botón de login normal
+            console.log('❌ Usuario no autenticado / sesión cerrada');
             authBtn.textContent = 'Iniciar Sesión';
             authBtn.className = 'auth-btn';
             authBtn.title = '';
